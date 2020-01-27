@@ -309,7 +309,7 @@ namespace MWMechanics
         if (mPath.size() > 1 && isAlmostStraight(position, mPath[0], mPath[1], pointTolerance))
             mPath.pop_front();
 
-        if (mPath.size() == 1 && sqrDistanceIgnoreZ(mPath.front(), position) < destinationTolerance * destinationTolerance)
+        if (mPath.size() == 1 && (mPath.front() - position).length2() < destinationTolerance * destinationTolerance)
             mPath.pop_front();
     }
 
@@ -328,7 +328,7 @@ namespace MWMechanics
 
         buildPathByPathgridImpl(startPoint, endPoint, pathgridGraph, std::back_inserter(mPath));
 
-        mConstructed = true;
+        mConstructed = !mPath.empty();
     }
 
     void PathFinder::buildPathByNavMesh(const MWWorld::ConstPtr& actor, const osg::Vec3f& startPoint,
@@ -341,7 +341,7 @@ namespace MWMechanics
         if (!buildPathByNavigatorImpl(actor, startPoint, endPoint, halfExtents, flags, areaCosts, std::back_inserter(mPath)))
             mPath.push_back(endPoint);
 
-        mConstructed = true;
+        mConstructed = !mPath.empty();
     }
 
     void PathFinder::buildPath(const MWWorld::ConstPtr& actor, const osg::Vec3f& startPoint, const osg::Vec3f& endPoint,
@@ -366,7 +366,7 @@ namespace MWMechanics
         if (!hasNavMesh && mPath.empty())
             mPath.push_back(endPoint);
 
-        mConstructed = true;
+        mConstructed = !mPath.empty();
     }
 
     bool PathFinder::buildPathByNavigatorImpl(const MWWorld::ConstPtr& actor, const osg::Vec3f& startPoint,

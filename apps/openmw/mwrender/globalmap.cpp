@@ -682,7 +682,7 @@ namespace MWRender
                 End of tes3mp addition
             */
 
-            it = mPendingImageDest.erase(it);
+            mPendingImageDest.erase(it);
             return true;
         }
     }

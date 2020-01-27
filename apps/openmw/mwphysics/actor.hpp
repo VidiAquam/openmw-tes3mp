@@ -49,7 +49,7 @@ namespace MWPhysics
         void enableCollisionBody(bool collision);
 
         void updateScale();
-        void updateRotation();
+        void setRotation(osg::Quat quat);
 
         /**
          * Return true if the collision shape looks the same no matter how its Z rotated.
@@ -81,6 +81,9 @@ namespace MWPhysics
          * Returns the half extents of the collision body (not scaled)
          */
         osg::Vec3f getOriginalHalfExtents() const;
+
+        /// Returns the mesh translation, scaled and rotated as necessary
+        osg::Vec3f getScaledMeshTranslation() const;
 
         /**
          * Returns the position of the collision body

@@ -497,28 +497,27 @@ void ObjectList::spawnObjects(MWWorld::CellStore* cellStore)
                     activeEffect.mMagnitude = 1;
                     activeEffects.push_back(activeEffect);
 
-                    LOG_APPEND(TimedLog::LOG_INFO, "-- adding active spell to master with id %s, effect %i, duration %f",
-                        baseObject.summonSpellId.c_str(), baseObject.summonEffectId, baseObject.summonDuration);
+                    LOG_APPEND(TimedLog::LOG_INFO, "-- adding active spell to master with id %s, effect %i, effectIndex %i, duration %f",
+                        baseObject.summonSpellId.c_str(), baseObject.summonEffectId, baseObject.summonEffectIndex, baseObject.summonDuration);
 
                     auto activeSpells = masterCreatureStats.getActiveSpells();
-                    if (!activeSpells.isSpellActive(baseObject.summonSpellId))
-                        activeSpells.addSpell(baseObject.summonSpellId, false, activeEffects, "", masterCreatureStats.getActorId());
+                    // Add or update effects
+                    activeSpells.addSpell(baseObject.summonSpellId, false, activeEffects, "", masterCreatureStats.getActorId());
 
                     LOG_APPEND(TimedLog::LOG_INFO, "-- setting summoned creatureActorId for %i-%i to %i",
                         newPtr.getCellRef().getRefNum(), newPtr.getCellRef().getMpNum(), creatureActorId);
 
                     // Check if this creature is present in the summoner's summoned creature map
                     std::map<ESM::SummonKey, int>& creatureMap = masterCreatureStats.getSummonedCreatureMap();
-                    int index = 0;
-                    // TODO: Support multiple summons 924f634bda9c2b30504a728cd6821334e900ca9b
-                    bool foundSummonedCreature = creatureMap.find(ESM::SummonKey(baseObject.summonEffectId, baseObject.summonSpellId, 0)) != creatureMap.end();
+                    bool foundSummonedCreature = 
+                        creatureMap.find(ESM::SummonKey(baseObject.summonEffectId, baseObject.summonSpellId, baseObject.summonEffectIndex)) != creatureMap.end();
 
                     // If it is, update its creatureActorId
                     if (foundSummonedCreature)
                         masterCreatureStats.setSummonedCreatureActorId(baseObject.refId, creatureActorId);
                     // If not, add it to the summoned creature map
                     else
-                        creatureMap.insert(std::make_pair(ESM::SummonKey(baseObject.summonEffectId, baseObject.summonSpellId, 0), creatureActorId));
+                        creatureMap.insert(std::make_pair(ESM::SummonKey(baseObject.summonEffectId, baseObject.summonSpellId, baseObject.summonEffectIndex), creatureActorId));
 
                     creatureStats.setFriendlyHits(0);
                 }
@@ -1179,7 +1178,7 @@ void ObjectList::addObjectSpawn(const MWWorld::Ptr& ptr)
     addBaseObject(baseObject);
 }
 
-void ObjectList::addObjectSpawn(const MWWorld::Ptr& ptr, const MWWorld::Ptr& master, std::string spellId, int effectId, float duration)
+void ObjectList::addObjectSpawn(const MWWorld::Ptr& ptr, const MWWorld::Ptr& master, std::string spellId, int effectId, int effectIndex, float duration)
 {
     cell = *ptr.getCell()->getCell();
 
@@ -1187,6 +1186,7 @@ void ObjectList::addObjectSpawn(const MWWorld::Ptr& ptr, const MWWorld::Ptr& mas
     baseObject.isSummon = true;
     baseObject.summonSpellId = spellId;
     baseObject.summonEffectId = effectId;
+    baseObject.summonEffectIndex = effectIndex;
     baseObject.summonDuration = duration;
     baseObject.master = MechanicsHelper::getTarget(master);
 

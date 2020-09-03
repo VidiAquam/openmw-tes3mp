@@ -274,6 +274,11 @@ double ObjectFunctions::GetObjectSummonEffectId(unsigned int index) noexcept
     return readObjectList->baseObjects.at(index).summonEffectId;
 }
 
+double ObjectFunctions::GetObjectSummonEffectIndex(unsigned int index) noexcept
+{
+    return readObjectList->baseObjects.at(index).summonEffectIndex;
+}
+
 const char *ObjectFunctions::GetObjectSummonSpellId(unsigned int index) noexcept
 {
     return readObjectList->baseObjects.at(index).summonSpellId.c_str();
@@ -549,6 +554,11 @@ void ObjectFunctions::SetObjectSummonEffectId(int summonEffectId) noexcept
 void ObjectFunctions::SetObjectSummonSpellId(const char* summonSpellId) noexcept
 {
     tempObject.summonSpellId = summonSpellId;
+}
+
+void ObjectFunctions::SetObjectSummonEffectIndex(int summonEffectIndex) noexcept
+{
+    tempObject.summonEffectIndex = summonEffectIndex;
 }
 
 void ObjectFunctions::SetObjectSummonDuration(double summonDuration) noexcept

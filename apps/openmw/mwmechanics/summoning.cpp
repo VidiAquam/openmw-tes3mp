@@ -147,9 +147,10 @@ namespace MWMechanics
 
                             MWMechanics::CreatureStats *actorCreatureStats = &mActor.getClass().getCreatureStats(mActor);
                             int effectId = it->mEffectId;
+                            int effectIndex = it->mEffectIndex;
                             std::string spellId = it->mSourceId;
                             float duration = actorCreatureStats->getActiveSpells().getEffectDuration(effectId, it->mSourceId);
-                            objectList->addObjectSpawn(placed, mActor, spellId, effectId, duration);
+                            objectList->addObjectSpawn(placed, mActor, spellId, effectId, effectIndex, duration);
                             objectList->sendObjectSpawn();
                         }
 
@@ -215,6 +216,7 @@ namespace MWMechanics
             {
                 // Purge the magic effect so a new creature can be summoned if desired
                 const ESM::SummonKey& key = it->first;
+                Log(Debug::Error) << "Purge summon effect effectid: " << key.mEffectId << " mEffectIndex:" << key.mEffectIndex;
                 creatureStats.getActiveSpells().purgeEffect(key.mEffectId, key.mSourceId, key.mEffectIndex);
                 creatureStats.getSpells().purgeEffect(key.mEffectId, key.mSourceId);
                 if (mActor.getClass().hasInventoryStore(mActor))

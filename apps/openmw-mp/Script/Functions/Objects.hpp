@@ -55,6 +55,7 @@
     \
     {"GetObjectSummonState",                  ObjectFunctions::GetObjectSummonState},\
     {"GetObjectSummonEffectId",               ObjectFunctions::GetObjectSummonEffectId},\
+    {"GetObjectSummonEffectIndex",            ObjectFunctions::GetObjectSummonEffectIndex},\
     {"GetObjectSummonSpellId",                ObjectFunctions::GetObjectSummonSpellId},\
     {"GetObjectSummonDuration",               ObjectFunctions::GetObjectSummonDuration},\
     {"DoesObjectHavePlayerSummoner",          ObjectFunctions::DoesObjectHavePlayerSummoner},\
@@ -115,6 +116,7 @@
     \
     {"SetObjectSummonState",                  ObjectFunctions::SetObjectSummonState},\
     {"SetObjectSummonEffectId",               ObjectFunctions::SetObjectSummonEffectId},\
+    {"SetObjectSummonEffectIndex",            ObjectFunctions::SetObjectSummonEffectIndex},\
     {"SetObjectSummonSpellId",                ObjectFunctions::SetObjectSummonSpellId},\
     {"SetObjectSummonDuration",               ObjectFunctions::SetObjectSummonDuration},\
     {"SetObjectSummonerPid",                  ObjectFunctions::SetObjectSummonerPid},\
@@ -575,6 +577,14 @@ public:
     * \return The summon effect ID.
     */
     static double GetObjectSummonEffectId(unsigned int index) noexcept;
+
+    /**
+    * \brief Get the summon effect index of the object at a certain index in the read object list.
+    *
+    * \param index The index of the object.
+    * \return The summon effect index.
+    */
+    static double GetObjectSummonEffectIndex(unsigned int index) noexcept;
 
     /**
     * \brief Get the summon spell ID of the object at a certain index in the read object list.
@@ -1066,6 +1076,14 @@ public:
     * \return void
     */
     static void SetObjectSummonSpellId(const char* summonSpellId) noexcept;
+
+    /**
+    * \brief Set the summon effect index of the temporary object stored on the server.
+    *
+    * \param summonEffectIndex The summon effect index.
+    * \return void
+    */
+    static void SetObjectSummonEffectIndex(int summonEffectIndex) noexcept;
 
     /**
     * \brief Set the summon duration of the temporary object stored on the server.

@@ -73,6 +73,7 @@ namespace mwmp
         bool isSummon;
         int summonEffectId;
         std::string summonSpellId;
+        int summonEffectIndex;
         float summonDuration;
         Target master;
 

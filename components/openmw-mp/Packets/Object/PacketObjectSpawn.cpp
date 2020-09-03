@@ -19,6 +19,7 @@ void PacketObjectSpawn::Object(BaseObject &baseObject, bool send)
     if (baseObject.isSummon)
     {
         RW(baseObject.summonEffectId, send);
+        RW(baseObject.summonEffectIndex, send);
         RW(baseObject.summonSpellId, send, true);
         RW(baseObject.summonDuration, send);
 

@@ -735,9 +735,9 @@ namespace MWScript
                         effects += store.getMagicEffects();
                     }
 
-                    for (const auto& effect : effects)
+                    for (const auto& activeEffect : effects)
                     {
-                        if (effect.first.mId == key && effect.second.getModifier() > 0)
+                        if (activeEffect.first.mId == key && activeEffect.second.getModifier() > 0)
                         {
                             runtime.push(1);
                             return;

@@ -52,8 +52,7 @@ bool AiPursue::execute (const MWWorld::Ptr& actor, CharacterController& characte
     if (target == MWWorld::Ptr() || !target.getRefData().getCount() || !target.getRefData().isEnabled())
         return true;
 
-    if (!MWBase::Environment::get().getWorld()->getLOS(target, actor)
-     || !MWBase::Environment::get().getMechanicsManager()->awarenessCheck(target, actor))
+    if (isTargetMagicallyHidden(target) && !MWBase::Environment::get().getMechanicsManager()->awarenessCheck(target, actor))
         return false;
 
     if (target.getClass().getCreatureStats(target).isDead())

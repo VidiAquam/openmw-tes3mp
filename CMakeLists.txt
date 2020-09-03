@@ -1,3 +1,6 @@
+project(OpenMW)
+cmake_minimum_required(VERSION 3.1.0)
+
 # Apps and tools
 option(BUILD_OPENMW             "Build OpenMW" ON)
 option(BUILD_LAUNCHER           "Build Launcher" ON)
@@ -16,16 +19,13 @@ option(BUILD_OPENMW_MP          "Build OpenMW-MP" ON)
 option(BUILD_BROWSER            "Build tes3mp Server Browser" ON)
 option(BUILD_MASTER             "Build tes3mp Master Server" OFF)
 
-if (NOT BUILD_LAUNCHER AND NOT BUILD_BROWSER AND NOT BUILD_OPENCS AND NOT BUILD_WIZARD)
+set(OpenGL_GL_PREFERENCE LEGACY)  # Use LEGACY as we use GL2; GLNVD is for GL3 and up.
+
+if (NOT BUILD_LAUNCHER AND NOT BUILD_OPENCS AND NOT BUILD_WIZARD)
    set(USE_QT FALSE)
 else()
    set(USE_QT TRUE)
 endif()
-
-# set the minimum required version across the board
-cmake_minimum_required(VERSION 3.1.0)
-
-project(OpenMW)
 
 # If the user doesn't supply a CMAKE_BUILD_TYPE via command line, choose one for them.
 IF(NOT CMAKE_BUILD_TYPE)
@@ -61,7 +61,7 @@ set(OPENMW_VERSION_COMMITDATE "")
 
 set(OPENMW_VERSION "${OPENMW_VERSION_MAJOR}.${OPENMW_VERSION_MINOR}.${OPENMW_VERSION_RELEASE}")
 
-set(OPENMW_DOC_BASEURL "https://openmw.readthedocs.io/en/master/")
+set(OPENMW_DOC_BASEURL "https://openmw.readthedocs.io/en/stable/")
 
 set(GIT_CHECKOUT FALSE)
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git)

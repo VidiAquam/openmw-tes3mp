@@ -508,15 +508,17 @@ void ObjectList::spawnObjects(MWWorld::CellStore* cellStore)
                         newPtr.getCellRef().getRefNum(), newPtr.getCellRef().getMpNum(), creatureActorId);
 
                     // Check if this creature is present in the summoner's summoned creature map
-                    std::map<std::pair<int, std::string>, int>& creatureMap = masterCreatureStats.getSummonedCreatureMap();
-                    bool foundSummonedCreature = creatureMap.find(std::make_pair(baseObject.summonEffectId, baseObject.summonSpellId)) != creatureMap.end();
+                    std::map<ESM::SummonKey, int>& creatureMap = masterCreatureStats.getSummonedCreatureMap();
+                    int index = 0;
+                    // TODO: Support multiple summons 924f634bda9c2b30504a728cd6821334e900ca9b
+                    bool foundSummonedCreature = creatureMap.find(ESM::SummonKey(baseObject.summonEffectId, baseObject.summonSpellId, 0)) != creatureMap.end();
 
                     // If it is, update its creatureActorId
                     if (foundSummonedCreature)
                         masterCreatureStats.setSummonedCreatureActorId(baseObject.refId, creatureActorId);
                     // If not, add it to the summoned creature map
                     else
-                        creatureMap.insert(std::make_pair(std::make_pair(baseObject.summonEffectId, baseObject.summonSpellId), creatureActorId));
+                        creatureMap.insert(std::make_pair(ESM::SummonKey(baseObject.summonEffectId, baseObject.summonSpellId, 0), creatureActorId));
 
                     creatureStats.setFriendlyHits(0);
                 }

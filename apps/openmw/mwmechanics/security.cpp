@@ -47,6 +47,10 @@ namespace MWMechanics
             !lock.getClass().hasToolTip(lock)) //If it's unlocked or can not be unlocked back out immediately
             return;
 
+        int uses = lockpick.getClass().getItemHealth(lockpick);
+        if (uses == 0)
+            return;
+
         int lockStrength = lock.getCellRef().getLockLevel();
 
         float pickQuality = lockpick.get<ESM::Lockpick>()->mBase->mData.mQuality;
@@ -99,9 +103,7 @@ namespace MWMechanics
                 resultMessage = "#{sLockFail}";
         }
 
-        int uses = lockpick.getClass().getItemHealth(lockpick);
-        --uses;
-        lockpick.getCellRef().setCharge(uses);
+        lockpick.getCellRef().setCharge(uses-1);
         if (!uses)
             lockpick.getContainerStore()->remove(lockpick, 1, mActor);
     }
@@ -109,7 +111,11 @@ namespace MWMechanics
     void Security::probeTrap(const MWWorld::Ptr &trap, const MWWorld::Ptr &probe,
                              std::string& resultMessage, std::string& resultSound)
     {
-        if (trap.getCellRef().getTrap()  == "")
+        if (trap.getCellRef().getTrap().empty())
+            return;
+
+        int uses = probe.getClass().getItemHealth(probe);
+        if (uses == 0)
             return;
 
         float probeQuality = probe.get<ESM::Probe>()->mBase->mData.mQuality;
@@ -165,9 +171,7 @@ namespace MWMechanics
                 resultMessage = "#{sTrapFail}";
         }
 
-        int uses = probe.getClass().getItemHealth(probe);
-        --uses;
-        probe.getCellRef().setCharge(uses);
+        probe.getCellRef().setCharge(uses-1);
         if (!uses)
             probe.getContainerStore()->remove(probe, 1, mActor);
     }

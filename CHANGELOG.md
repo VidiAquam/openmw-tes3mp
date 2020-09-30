@@ -3,12 +3,14 @@
 
     Bug #1662: Qt4 and Windows binaries crash if there's a non-ASCII character in a file path/config path
     Bug #1952: Incorrect particle lighting
+    Bug #2069: Fireflies in Fireflies invade Morrowind look wrong
     Bug #2311: Targeted scripts are not properly supported on non-unique RefIDs
     Bug #3676: NiParticleColorModifier isn't applied properly
     Bug #3714: Savegame fails to load due to conflict between SpellState and MagicEffects
     Bug #4021: Attributes and skills are not stored as floats
     Bug #4055: Local scripts don't inherit variables from their base record
     Bug #4623: Corprus implementation is incorrect
+    Bug #4631: Setting MSAA level too high doesn't fall back to highest supported level
     Bug #4764: Data race in osg ParticleSystem
     Bug #4774: Guards are ignorant of an invisible player that tries to attack them
     Bug #5108: Savegame bloating due to inefficient fog textures format
@@ -44,8 +46,12 @@
     Bug #5531: Actors flee using current rotation by axis x
     Bug #5539: Window resize breaks when going from a lower resolution to full screen resolution
     Bug #5548: Certain exhausted topics can be highlighted again even though there's no new dialogue
+    Bug #5557: Diagonal movement is noticeably slower with analogue stick
+    Bug #5603: Setting constant effect cast style doesn't correct effects view
+    Bug #5611: Usable items with "0 Uses" should be used only once
     Feature #390: 3rd person look "over the shoulder"
     Feature #2386: Distant Statics in the form of Object Paging
+    Feature #4894: Consider actors as obstacles for pathfinding
     Feature #5297: Add a search function to the "Datafiles" tab of the OpenMW launcher
     Feature #5362: Show the soul gems' trapped soul in count dialog
     Feature #5445: Handle NiLines
@@ -55,6 +61,8 @@
     Feature #5524: Resume failed script execution after reload
     Feature #5525: Search fields tweaks (utf-8)
     Feature #5545: Option to allow stealing from an unconscious NPC during combat
+    Feature #5579: MCP SetAngle enhancement
+    Feature #5610: Actors movement should be smoother
     Task #5480: Drop Qt4 support
     Task #5520: Improve cell name autocompleter implementation
 

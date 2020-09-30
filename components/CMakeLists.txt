@@ -91,10 +91,9 @@ add_component_dir (misc
     gcd constants utf8stream stringops resourcehelpers rng messageformatparser weakcache
     )
 
-add_component_dir(debug
-        debugging debuglog
-        )
-
+add_component_dir (debug
+    debugging debuglog gldebug
+    )
 
 IF(NOT WIN32 AND NOT APPLE)
     add_definitions(-DGLOBAL_DATA_PATH="${GLOBAL_DATA_PATH}")

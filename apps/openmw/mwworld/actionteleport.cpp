@@ -40,7 +40,7 @@ namespace MWWorld
         {
             // Find any NPCs that are following the actor and teleport them with him
             std::set<MWWorld::Ptr> followers;
-            getFollowersToTeleport(actor, followers);
+            getFollowers(actor, followers, true);
 
             for (std::set<MWWorld::Ptr>::iterator it = followers.begin(); it != followers.end(); ++it)
                 teleport(*it);
@@ -82,6 +82,9 @@ namespace MWWorld
             MWWorld::CellStore *newCellStore;
             mwmp::CellController *cellController = mwmp::Main::get().getCellController();
 
+            // TODO: test it. Added by 14aacb81c580b4581b90ffdca9db9264bfbcd644
+            if (actor.getClass().getCreatureStats(actor).getAiSequence().isInCombat(world->getPlayerPtr()))
+                actor.getClass().getCreatureStats(actor).getAiSequence().stopCombat();
             if (mCellName.empty())
             {
                 int cellX;
@@ -150,7 +153,7 @@ namespace MWWorld
         }
     }
 
-    void ActionTeleport::getFollowersToTeleport(const MWWorld::Ptr& actor, std::set<MWWorld::Ptr>& out) {
+    void ActionTeleport::getFollowers(const MWWorld::Ptr& actor, std::set<MWWorld::Ptr>& out, bool includeHostiles) {
         std::set<MWWorld::Ptr> followers;
         MWBase::Environment::get().getMechanicsManager()->getActorsFollowing(actor, followers);
 
@@ -159,11 +162,17 @@ namespace MWWorld
             MWWorld::Ptr follower = *it;
 
             std::string script = follower.getClass().getScript(follower);
+
+            if (!includeHostiles && follower.getClass().getCreatureStats(follower).getAiSequence().isInCombat(actor))
+                continue;
+
             if (!script.empty() && follower.getRefData().getLocals().getIntVar(script, "stayoutside") == 1)
                 continue;
 
-            if ((follower.getRefData().getPosition().asVec3() - actor.getRefData().getPosition().asVec3()).length2() <= 800*800)
-                out.insert(follower);
+            if ((follower.getRefData().getPosition().asVec3() - actor.getRefData().getPosition().asVec3()).length2() > 800 * 800)
+                continue;
+
+            out.emplace(follower);
         }
     }
 }

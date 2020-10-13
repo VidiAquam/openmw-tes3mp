@@ -44,6 +44,8 @@ namespace mwmp
                 debugMessage += "TAKE_ALL";
             else if (containerSubAction == mwmp::BaseObjectList::REPLY_TO_REQUEST)
                 debugMessage += "REPLY_TO_REQUEST";
+            else if (containerSubAction == mwmp::BaseObjectList::TRADE)
+                debugMessage += "TRADE";
 
             LOG_APPEND(TimedLog::LOG_VERBOSE, "%s", debugMessage.c_str());
 

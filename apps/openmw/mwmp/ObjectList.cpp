@@ -138,7 +138,7 @@ void ObjectList::addEntireContainer(const MWWorld::Ptr& ptr)
 
     for (const auto itemPtr : containerStore)
     {
-        addContainerItem(baseObject, itemPtr, itemPtr.getRefData().getCount(), itemPtr.getRefData().getCount());
+        addContainerItem(baseObject, itemPtr, itemPtr.getRefData().getCount(false), itemPtr.getRefData().getCount());
     }
 
     addBaseObject(baseObject);
@@ -710,7 +710,8 @@ void ObjectList::restockObjects(MWWorld::CellStore* cellStore)
             LOG_APPEND(TimedLog::LOG_VERBOSE, "-- Found %s %i-%i", ptrFound.getCellRef().getRefId().c_str(),
                                ptrFound.getCellRef().getRefNum(), ptrFound.getCellRef().getMpNum());
 
-            ptrFound.getClass().restock(ptrFound);
+            LOG_APPEND(TimedLog::LOG_VERBOSE, "-- restock requested but it is not supported now!");
+            // ptrFound.getClass().restock(ptrFound);
 
             reset();
             packetOrigin = mwmp::PACKET_ORIGIN::CLIENT_GAMEPLAY;

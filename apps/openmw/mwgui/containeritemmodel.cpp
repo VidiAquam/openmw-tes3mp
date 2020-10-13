@@ -172,6 +172,8 @@ void ContainerItemModel::removeItem (const ItemStack& item, size_t count)
                 */
                 mwmp::CurrentContainer *currentContainer = &mwmp::Main::get().getLocalPlayer()->currentContainer;
 
+                int quantity = it->getRefData().getCount(false);
+
                 if (currentContainer->refNum != source.first.getCellRef().getRefNum().mIndex ||
                     currentContainer->mpNum != source.first.getCellRef().getMpNum())
                 {
@@ -180,23 +182,26 @@ void ContainerItemModel::removeItem (const ItemStack& item, size_t count)
                     objectList->packetOrigin = mwmp::PACKET_ORIGIN::CLIENT_GAMEPLAY;
                     objectList->cell = *source.first.getCell()->getCell();
                     objectList->action = mwmp::BaseObjectList::REMOVE;
-                    objectList->containerSubAction = mwmp::BaseObjectList::NONE;
+                    objectList->containerSubAction = mTrading ? mwmp::BaseObjectList::TRADE : mwmp::BaseObjectList::NONE;
                     mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(source.first);
-                    objectList->addContainerItem(baseObject, *it, it->getRefData().getCount(), toRemove);
+                    objectList->addContainerItem(baseObject, *it, it->getRefData().getCount(!mTrading), toRemove);
                     objectList->addBaseObject(baseObject);
                     objectList->sendContainer();
 
-                    // TODO: Test changes 72549651e0b3afcbf2a481b8db2731281b760e41
-                    // TODO: Fix restock items
-                    int quantity = it->getRefData().getCount();
                     // If this is a restocking quantity, just don't remove it
-                    if(quantity < 0 && mTrading)
+                    if (quantity < 0 && mTrading) {
                         toRemove += quantity;
-                    else
+                    }
+                    else {
                         toRemove -= it->getRefData().getCount();
+                    }
                 }
                 else
-                    toRemove -= store.remove(*it, toRemove, source.first);
+                    // If this is a restocking quantity, just don't remove it
+                    if (quantity < 0 && mTrading)
+                        toRemove += quantity;
+                    else
+                        toRemove -= store.remove(*it, toRemove, source.first);
                 /*
                     End of tes3mp change (major)
                 */

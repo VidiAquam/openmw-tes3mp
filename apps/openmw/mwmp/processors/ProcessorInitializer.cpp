@@ -62,7 +62,6 @@
 #include "object/ProcessorObjectMiscellaneous.hpp"
 #include "object/ProcessorObjectMove.hpp"
 #include "object/ProcessorObjectPlace.hpp"
-#include "object/ProcessorObjectRestock.hpp"
 #include "object/ProcessorObjectRotate.hpp"
 #include "object/ProcessorObjectScale.hpp"
 #include "object/ProcessorObjectSound.hpp"
@@ -165,7 +164,6 @@ void ProcessorInitializer()
     ObjectProcessor::AddProcessor(new ProcessorObjectMiscellaneous());
     ObjectProcessor::AddProcessor(new ProcessorObjectMove());
     ObjectProcessor::AddProcessor(new ProcessorObjectPlace());
-    ObjectProcessor::AddProcessor(new ProcessorObjectRestock());
     ObjectProcessor::AddProcessor(new ProcessorObjectRotate());
     ObjectProcessor::AddProcessor(new ProcessorObjectScale());
     ObjectProcessor::AddProcessor(new ProcessorObjectSound());

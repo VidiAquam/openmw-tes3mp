@@ -120,7 +120,7 @@ set(PROCESSORS_OBJECT
         processors/object/ProcessorObjectDelete.hpp processors/object/ProcessorObjectHit.hpp
         processors/object/ProcessorObjectLock.hpp processors/object/ProcessorObjectMiscellaneous.hpp
         processors/object/ProcessorObjectMove.hpp processors/object/ProcessorObjectPlace.hpp
-        processors/object/ProcessorObjectRestock.hpp processors/object/ProcessorObjectRotate.hpp
+        processors/object/ProcessorObjectRotate.hpp
         processors/object/ProcessorObjectScale.hpp processors/object/ProcessorObjectSound.hpp
         processors/object/ProcessorObjectSpawn.hpp processors/object/ProcessorObjectState.hpp
         processors/object/ProcessorObjectTrap.hpp processors/object/ProcessorClientScriptLocal.hpp

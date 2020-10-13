@@ -152,7 +152,6 @@
     {"SendObjectDelete",                      ObjectFunctions::SendObjectDelete},\
     {"SendObjectLock",                        ObjectFunctions::SendObjectLock},\
     {"SendObjectMiscellaneous",               ObjectFunctions::SendObjectMiscellaneous},\
-    {"SendObjectRestock",                     ObjectFunctions::SendObjectRestock},\
     {"SendObjectTrap",                        ObjectFunctions::SendObjectTrap},\
     {"SendObjectScale",                       ObjectFunctions::SendObjectScale},\
     {"SendObjectSound",                       ObjectFunctions::SendObjectSound},\
@@ -1351,17 +1350,6 @@ public:
     * \return void
     */
     static void SendObjectMiscellaneous(bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
-
-    /**
-    * \brief Send an ObjectRestock packet.
-    *
-    * \param sendToOtherPlayers Whether this packet should be sent to players other than the
-    *                           player attached to the packet (false by default).
-    * \param skipAttachedPlayer Whether the packet should skip being sent to the player attached
-    *                           to the packet (false by default).
-    * \return void
-    */
-    static void SendObjectRestock(bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept;
 
     /**
     * \brief Send an ObjectTrap packet.

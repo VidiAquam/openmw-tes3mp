@@ -111,50 +111,6 @@ namespace MWGui
         setCoord(400, 0, 400, 300);
     }
 
-    // TODO: Fix restock items
-    void TradeWindow::restock()
-    {
-        // Restock items on the actor inventory
-        /*
-            Start of tes3mp change (major)
-
-            Don't restock here and instead send an ID_OBJECT_RESTOCK packet to the
-            server requesting permission for a restock
-        */
-        //mPtr.getClass().restock(mPtr);
-
-        mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
-        objectList->reset();
-        objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
-        objectList->addObjectGeneric(mPtr);
-        objectList->sendObjectRestock();
-        /*
-            End of tes3mp change (major)
-        */
-
-        // Also restock any containers owned by this merchant, which are also available to buy in the trade window
-        std::vector<MWWorld::Ptr> itemSources;
-        MWBase::Environment::get().getWorld()->getContainersOwnedBy(mPtr, itemSources);
-        for (MWWorld::Ptr& source : itemSources)
-        {
-            /*
-                Start of tes3mp change (major)
-
-                Don't restock here and instead send an ID_OBJECT_RESTOCK packet to the
-                server requesting permission for a restock
-            */
-            //source.getClass().restock(source);
-
-            objectList->reset();
-            objectList->packetOrigin = mwmp::CLIENT_GAMEPLAY;
-            objectList->addObjectGeneric(source);
-            objectList->sendObjectRestock();
-            /*
-                End of tes3mp change (major)
-            */
-        }
-    }
-
     void TradeWindow::setPtr(const MWWorld::Ptr& actor)
     {
         mPtr = actor;

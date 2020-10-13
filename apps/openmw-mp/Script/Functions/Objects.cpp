@@ -763,17 +763,6 @@ void ObjectFunctions::SendObjectMiscellaneous(bool sendToOtherPlayers, bool skip
         packet->Send(true);
 }
 
-void ObjectFunctions::SendObjectRestock(bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
-{
-    mwmp::ObjectPacket *packet = mwmp::Networking::get().getObjectPacketController()->GetPacket(ID_OBJECT_RESTOCK);
-    packet->setObjectList(&writeObjectList);
-
-    if (!skipAttachedPlayer)
-        packet->Send(false);
-    if (sendToOtherPlayers)
-        packet->Send(true);
-}
-
 void ObjectFunctions::SendObjectTrap(bool sendToOtherPlayers, bool skipAttachedPlayer) noexcept
 {
     mwmp::ObjectPacket *packet = mwmp::Networking::get().getObjectPacketController()->GetPacket(ID_OBJECT_TRAP);

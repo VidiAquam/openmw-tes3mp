@@ -205,7 +205,7 @@ add_component_dir (openmw-mp/Packets/Object
         PacketDoorDestination PacketDoorState
 
         PacketConsoleCommand PacketContainer PacketObjectActivate PacketObjectAnimPlay PacketObjectAttach
-        PacketObjectDelete PacketObjectHit PacketObjectLock PacketObjectMove PacketObjectPlace PacketObjectRestock
+        PacketObjectDelete PacketObjectHit PacketObjectLock PacketObjectMove PacketObjectPlace
         PacketObjectRotate PacketObjectScale PacketObjectSound PacketObjectSpawn PacketObjectState PacketObjectTrap
         PacketMusicPlay PacketVideoPlay PacketClientScriptLocal PacketScriptMemberShort PacketObjectMiscellaneous
         )

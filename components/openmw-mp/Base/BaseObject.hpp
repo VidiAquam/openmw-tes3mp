@@ -116,7 +116,6 @@ namespace mwmp
             DROP = 2,
             TAKE_ALL = 3,
             REPLY_TO_REQUEST = 4,
-            RESTOCK_RESULT = 5,
             TRADE = 6
         };
 

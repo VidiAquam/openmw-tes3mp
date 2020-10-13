@@ -52,22 +52,29 @@ namespace
 
 namespace MWGui
 {
-
 ContainerItemModel::ContainerItemModel(const std::vector<MWWorld::Ptr>& itemSources, const std::vector<MWWorld::Ptr>& worldItems)
-    : mItemSources(itemSources)
-    , mWorldItems(worldItems)
+    : mWorldItems(worldItems)
+    , mTrading(true)
 {
-    assert (!mItemSources.empty());
+    assert (!itemSources.empty());
+    // Tie resolution lifetimes to the ItemModel
+    mItemSources.reserve(itemSources.size());
+    for(const MWWorld::Ptr& source : itemSources)
+    {
+        MWWorld::ContainerStore& store = source.getClass().getContainerStore(source);
+        mItemSources.push_back(std::make_pair(source, store.resolveTemporarily()));
+    }
 }
 
-ContainerItemModel::ContainerItemModel (const MWWorld::Ptr& source)
+ContainerItemModel::ContainerItemModel (const MWWorld::Ptr& source) : mTrading(false)
 {
-    mItemSources.push_back(source);
+    MWWorld::ContainerStore& store = source.getClass().getContainerStore(source);
+    mItemSources.push_back(std::make_pair(source, store.resolveTemporarily()));
 }
 
 bool ContainerItemModel::allowedToUseItems() const
 {
-    if (mItemSources.size() == 0)
+    if (mItemSources.empty())
         return true;
 
     MWWorld::Ptr ptr = MWMechanics::getPlayer();
@@ -75,7 +82,7 @@ bool ContainerItemModel::allowedToUseItems() const
 
     // Check if the player is allowed to use items from opened container
     MWBase::MechanicsManager* mm = MWBase::Environment::get().getMechanicsManager();
-    return mm->isAllowedToUse(ptr, mItemSources[0], victim);
+    return mm->isAllowedToUse(ptr, mItemSources[0].first, victim);
 }
 
 ItemStack ContainerItemModel::getItem (ModelIndex index)
@@ -106,8 +113,9 @@ ItemModel::ModelIndex ContainerItemModel::getIndex (ItemStack item)
 
 MWWorld::Ptr ContainerItemModel::copyItem (const ItemStack& item, size_t count, bool allowAutoEquip)
 {
-    const MWWorld::Ptr& source = mItemSources[mItemSources.size()-1];
-    if (item.mBase.getContainerStore() == &source.getClass().getContainerStore(source))
+    auto& source = mItemSources[0];
+    MWWorld::ContainerStore& store = source.first.getClass().getContainerStore(source.first);
+    if (item.mBase.getContainerStore() == &store)
         throw std::runtime_error("Item to copy needs to be from a different container!");
 
     /*
@@ -118,10 +126,10 @@ MWWorld::Ptr ContainerItemModel::copyItem (const ItemStack& item, size_t count, 
     mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
     objectList->reset();
     objectList->packetOrigin = mwmp::PACKET_ORIGIN::CLIENT_GAMEPLAY;
-    objectList->cell = *source.getCell()->getCell();
+    objectList->cell = *source.first.getCell()->getCell();
     objectList->action = mwmp::BaseObjectList::ADD;
     objectList->containerSubAction = mwmp::BaseObjectList::NONE;
-    mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(source);
+    mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(source.first);
     objectList->addContainerItem(baseObject, item.mBase, count, 0);
     objectList->addBaseObject(baseObject);
     objectList->sendContainer();
@@ -146,9 +154,9 @@ void ContainerItemModel::removeItem (const ItemStack& item, size_t count)
 {
     int toRemove = count;
 
-    for (MWWorld::Ptr& source : mItemSources)
+    for (auto& source : mItemSources)
     {
-        MWWorld::ContainerStore& store = source.getClass().getContainerStore(source);
+        MWWorld::ContainerStore& store = source.first.getClass().getContainerStore(source.first);
 
         for (MWWorld::ContainerStoreIterator it = store.begin(); it != store.end(); ++it)
         {
@@ -164,24 +172,31 @@ void ContainerItemModel::removeItem (const ItemStack& item, size_t count)
                 */
                 mwmp::CurrentContainer *currentContainer = &mwmp::Main::get().getLocalPlayer()->currentContainer;
 
-                if (currentContainer->refNum != source.getCellRef().getRefNum().mIndex ||
-                    currentContainer->mpNum != source.getCellRef().getMpNum())
+                if (currentContainer->refNum != source.first.getCellRef().getRefNum().mIndex ||
+                    currentContainer->mpNum != source.first.getCellRef().getMpNum())
                 {
                     mwmp::ObjectList *objectList = mwmp::Main::get().getNetworking()->getObjectList();
                     objectList->reset();
                     objectList->packetOrigin = mwmp::PACKET_ORIGIN::CLIENT_GAMEPLAY;
-                    objectList->cell = *source.getCell()->getCell();
+                    objectList->cell = *source.first.getCell()->getCell();
                     objectList->action = mwmp::BaseObjectList::REMOVE;
                     objectList->containerSubAction = mwmp::BaseObjectList::NONE;
-                    mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(source);
+                    mwmp::BaseObject baseObject = objectList->getBaseObjectFromPtr(source.first);
                     objectList->addContainerItem(baseObject, *it, it->getRefData().getCount(), toRemove);
                     objectList->addBaseObject(baseObject);
                     objectList->sendContainer();
-                    
-                    toRemove -= it->getRefData().getCount();
+
+                    // TODO: Test changes 72549651e0b3afcbf2a481b8db2731281b760e41
+                    // TODO: Fix restock items
+                    int quantity = it->getRefData().getCount();
+                    // If this is a restocking quantity, just don't remove it
+                    if(quantity < 0 && mTrading)
+                        toRemove += quantity;
+                    else
+                        toRemove -= it->getRefData().getCount();
                 }
                 else
-                    toRemove -= store.remove(*it, toRemove, source);
+                    toRemove -= store.remove(*it, toRemove, source.first);
                 /*
                     End of tes3mp change (major)
                 */
@@ -229,9 +244,9 @@ void ContainerItemModel::removeItem (const ItemStack& item, size_t count)
 void ContainerItemModel::update()
 {
     mItems.clear();
-    for (MWWorld::Ptr& source : mItemSources)
+    for (auto& source : mItemSources)
     {
-        MWWorld::ContainerStore& store = source.getClass().getContainerStore(source);
+        MWWorld::ContainerStore& store = source.first.getClass().getContainerStore(source.first);
 
         for (MWWorld::ContainerStoreIterator it = store.begin(); it != store.end(); ++it)
         {
@@ -285,7 +300,7 @@ bool ContainerItemModel::onDropItem(const MWWorld::Ptr &item, int count)
     if (mItemSources.empty())
         return false;
 
-    MWWorld::Ptr target = mItemSources[0];
+    MWWorld::Ptr target = mItemSources[0].first;
 
     if (target.getTypeName() != typeid(ESM::Container).name())
         return true;
@@ -315,7 +330,7 @@ bool ContainerItemModel::onTakeItem(const MWWorld::Ptr &item, int count)
     if (mItemSources.empty())
         return false;
 
-    MWWorld::Ptr target = mItemSources[0];
+    MWWorld::Ptr target = mItemSources[0].first;
 
     // Looting a dead corpse is considered OK
     if (target.getClass().isActor() && target.getClass().getCreatureStats(target).isDead())

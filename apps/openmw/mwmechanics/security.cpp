@@ -103,7 +103,7 @@ namespace MWMechanics
                 resultMessage = "#{sLockFail}";
         }
 
-        lockpick.getCellRef().setCharge(uses-1);
+        lockpick.getCellRef().setCharge(--uses);
         if (!uses)
             lockpick.getContainerStore()->remove(lockpick, 1, mActor);
     }
@@ -171,7 +171,7 @@ namespace MWMechanics
                 resultMessage = "#{sTrapFail}";
         }
 
-        probe.getCellRef().setCharge(uses-1);
+        probe.getCellRef().setCharge(--uses);
         if (!uses)
             probe.getContainerStore()->remove(probe, 1, mActor);
     }

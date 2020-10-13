@@ -5,8 +5,11 @@
     Bug #1952: Incorrect particle lighting
     Bug #2069: Fireflies in Fireflies invade Morrowind look wrong
     Bug #2311: Targeted scripts are not properly supported on non-unique RefIDs
+    Bug #2473: Unable to overstock merchants
     Bug #3676: NiParticleColorModifier isn't applied properly
     Bug #3714: Savegame fails to load due to conflict between SpellState and MagicEffects
+    Bug #3862: Random container contents behave differently than vanilla
+    Bug #3929: Leveled list merchant containers respawn on barter
     Bug #4021: Attributes and skills are not stored as floats
     Bug #4055: Local scripts don't inherit variables from their base record
     Bug #4623: Corprus implementation is incorrect
@@ -51,6 +54,7 @@
     Bug #5588: Randomly clicking on the journal's right-side page when it's empty shows random topics
     Bug #5603: Setting constant effect cast style doesn't correct effects view
     Bug #5611: Usable items with "0 Uses" should be used only once
+    Bug #5622: Can't properly interact with the console when in pause menu
     Feature #390: 3rd person look "over the shoulder"
     Feature #2386: Distant Statics in the form of Object Paging
     Feature #4894: Consider actors as obstacles for pathfinding

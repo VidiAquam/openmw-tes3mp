@@ -73,14 +73,14 @@ namespace MWInput
 
         virtual ~BindingsListener() = default;
 
-        virtual void channelChanged(ICS::Channel* channel, float currentValue, float previousValue)
+        void channelChanged(ICS::Channel* channel, float currentValue, float previousValue) override
         {
             int action = channel->getNumber();
             mBindingsManager->actionValueChanged(action, currentValue, previousValue);
         }
 
-        virtual void keyBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
-            , SDL_Scancode key, ICS::Control::ControlChangingDirection direction)
+        void keyBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
+            , SDL_Scancode key, ICS::Control::ControlChangingDirection direction) override
         {
             //Disallow binding escape key
             if (key==SDL_SCANCODE_ESCAPE)
@@ -110,15 +110,15 @@ namespace MWInput
             MWBase::Environment::get().getWindowManager()->notifyInputActionBound();
         }
 
-        virtual void mouseAxisBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
-            , ICS::InputControlSystem::NamedAxis axis, ICS::Control::ControlChangingDirection direction)
+        void mouseAxisBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
+            , ICS::InputControlSystem::NamedAxis axis, ICS::Control::ControlChangingDirection direction) override
         {
             // we don't want mouse movement bindings
             return;
         }
 
-        virtual void mouseButtonBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
-            , unsigned int button, ICS::Control::ControlChangingDirection direction)
+        void mouseButtonBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
+            , unsigned int button, ICS::Control::ControlChangingDirection direction) override
         {
             if (!mDetectingKeyboard)
                 return;
@@ -128,8 +128,8 @@ namespace MWInput
             MWBase::Environment::get().getWindowManager()->notifyInputActionBound();
         }
 
-        virtual void mouseWheelBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
-            , ICS::InputControlSystem::MouseWheelClick click, ICS::Control::ControlChangingDirection direction)
+        void mouseWheelBindingDetected(ICS::InputControlSystem* ICS, ICS::Control* control
+            , ICS::InputControlSystem::MouseWheelClick click, ICS::Control::ControlChangingDirection direction) override
         {
             if (!mDetectingKeyboard)
                 return;
@@ -139,8 +139,8 @@ namespace MWInput
             MWBase::Environment::get().getWindowManager()->notifyInputActionBound();
         }
 
-        virtual void joystickAxisBindingDetected(ICS::InputControlSystem* ICS, int deviceID, ICS::Control* control
-            , int axis, ICS::Control::ControlChangingDirection direction)
+        void joystickAxisBindingDetected(ICS::InputControlSystem* ICS, int deviceID, ICS::Control* control
+            , int axis, ICS::Control::ControlChangingDirection direction) override
         {
             //only allow binding to the trigers
             if (axis != SDL_CONTROLLER_AXIS_TRIGGERLEFT && axis != SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
@@ -155,8 +155,8 @@ namespace MWInput
             MWBase::Environment::get().getWindowManager()->notifyInputActionBound();
         }
 
-        virtual void joystickButtonBindingDetected(ICS::InputControlSystem* ICS, int deviceID, ICS::Control* control
-            , unsigned int button, ICS::Control::ControlChangingDirection direction)
+        void joystickButtonBindingDetected(ICS::InputControlSystem* ICS, int deviceID, ICS::Control* control
+            , unsigned int button, ICS::Control::ControlChangingDirection direction) override
         {
             if (mDetectingKeyboard)
                 return;

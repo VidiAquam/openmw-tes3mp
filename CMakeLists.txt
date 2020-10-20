@@ -158,6 +158,8 @@ include_directories(${RakNet_INCLUDES})
 # Dependencies
 find_package(OpenGL REQUIRED)
 
+find_package(LZ4 REQUIRED)
+
 if (USE_QT)
     find_package(Qt5Core 5.9 REQUIRED) # Temporary adjustment for TES3MP CI
     find_package(Qt5Widgets REQUIRED)
@@ -453,6 +455,10 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL GNU OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.6 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 4.6)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-parameter")
+    endif()
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override")
     endif()
 elseif (MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE")
@@ -787,9 +793,10 @@ if (WIN32)
     endforeach(d)
 
     set_target_properties(components PROPERTIES COMPILE_FLAGS "${WARNINGS} ${MT_BUILD}")
-
-    if (BUILD_OPENMW)
-        set_target_properties(osg-ffmpeg-videoplayer PROPERTIES COMPILE_FLAGS "${WARNINGS} ${MT_BUILD}")
+    set_target_properties(osg-ffmpeg-videoplayer PROPERTIES COMPILE_FLAGS "${WARNINGS} ${MT_BUILD}")
+    
+    if (MSVC_VERSION GREATER_EQUAL 1915 AND MSVC_VERSION LESS 1920)
+        target_compile_definitions(components INTERFACE _ENABLE_EXTENDED_ALIGNED_STORAGE)
     endif()
 
     if (BUILD_BSATOOL)
@@ -1038,7 +1045,11 @@ elseif(NOT APPLE)
 
         # Install binaries
         IF(BUILD_OPENMW)
-            INSTALL(PROGRAMS "${INSTALL_SOURCE}/openmw" DESTINATION "${BINDIR}" )
+            IF(ANDROID)
+                INSTALL(PROGRAMS "${INSTALL_SOURCE}/libopenmw.so" DESTINATION "${BINDIR}" )
+            ELSE(ANDROID)
+                INSTALL(PROGRAMS "${INSTALL_SOURCE}/openmw" DESTINATION "${BINDIR}" )
+            ENDIF(ANDROID)
         ENDIF(BUILD_OPENMW)
         IF(BUILD_LAUNCHER)
             INSTALL(PROGRAMS "${INSTALL_SOURCE}/openmw-launcher" DESTINATION "${BINDIR}" )

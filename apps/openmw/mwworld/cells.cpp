@@ -399,7 +399,7 @@ public:
 
     MWWorld::Cells& mCells;
 
-    virtual MWWorld::CellStore* getCellStore(const ESM::CellId& cellId)
+    MWWorld::CellStore* getCellStore(const ESM::CellId& cellId) override
     {
         try
         {

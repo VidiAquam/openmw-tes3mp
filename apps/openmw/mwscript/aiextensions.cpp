@@ -54,7 +54,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+                void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -75,7 +75,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+                void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -103,7 +103,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+                void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -137,7 +137,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+                void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -179,7 +179,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -194,7 +194,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+                void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -251,7 +251,7 @@ namespace MWScript
             public:
                 OpGetAiSetting(MWMechanics::CreatureStats::AiSetting index) : mIndex(index) {}
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -265,7 +265,7 @@ namespace MWScript
             public:
                 OpModAiSetting(MWMechanics::CreatureStats::AiSetting index) : mIndex(index) {}
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
                     Interpreter::Type_Integer value = runtime[0].mInteger;
@@ -284,7 +284,7 @@ namespace MWScript
             public:
                 OpSetAiSetting(MWMechanics::CreatureStats::AiSetting index) : mIndex(index) {}
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
                     Interpreter::Type_Integer value = runtime[0].mInteger;
@@ -332,7 +332,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+                void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -387,7 +387,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+                void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -423,7 +423,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -438,7 +438,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr observer = R()(runtime, false); // required=false
 
@@ -460,7 +460,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
 
                     MWWorld::Ptr source = R()(runtime);
@@ -483,7 +483,7 @@ namespace MWScript
         class OpGetTarget : public Interpreter::Opcode0
         {
             public:
-                virtual void execute (Interpreter::Runtime &runtime)
+                void execute (Interpreter::Runtime &runtime) override
                 {
                     MWWorld::Ptr actor = R()(runtime);
                     std::string testedTargetId = runtime.getStringLiteral (runtime[0].mInteger);
@@ -513,7 +513,7 @@ namespace MWScript
         class OpStartCombat : public Interpreter::Opcode0
         {
             public:
-                virtual void execute (Interpreter::Runtime &runtime)
+                void execute (Interpreter::Runtime &runtime) override
                 {
                     MWWorld::Ptr actor = R()(runtime);
                     std::string targetID = runtime.getStringLiteral (runtime[0].mInteger);
@@ -560,7 +560,7 @@ namespace MWScript
         class OpStopCombat : public Interpreter::Opcode0
         {
             public:
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr actor = R()(runtime);
                     MWMechanics::CreatureStats& creatureStats = actor.getClass().getCreatureStats(actor);
@@ -572,7 +572,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     bool enabled = MWBase::Environment::get().getMechanicsManager()->toggleAI();
 
@@ -584,7 +584,7 @@ namespace MWScript
         class OpFace : public Interpreter::Opcode0
         {
         public:
-            virtual void execute(Interpreter::Runtime& runtime)
+            void execute(Interpreter::Runtime& runtime) override
             {
                 MWWorld::Ptr actor = R()(runtime);
 

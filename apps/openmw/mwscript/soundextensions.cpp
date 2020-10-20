@@ -39,7 +39,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -64,7 +64,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -76,7 +76,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     std::string sound = runtime.getStringLiteral (runtime[0].mInteger);
                     runtime.pop();
@@ -105,7 +105,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     std::string sound = runtime.getStringLiteral (runtime[0].mInteger);
                     runtime.pop();
@@ -118,7 +118,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     std::string sound = runtime.getStringLiteral (runtime[0].mInteger);
                     runtime.pop();
@@ -142,7 +142,7 @@ namespace MWScript
 
                 OpPlaySound3D (bool loop) : mLoop (loop) {}
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -165,7 +165,7 @@ namespace MWScript
 
                 OpPlaySoundVP3D (bool loop) : mLoop (loop) {}
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -191,7 +191,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -207,7 +207,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 

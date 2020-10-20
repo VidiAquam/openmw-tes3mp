@@ -163,7 +163,7 @@ namespace
                         ? btVector3(distanceFromDoor, 0, 0)
                         : btVector3(0, distanceFromDoor, 0);
 
-                const auto& transform = object->getCollisionObject()->getWorldTransform();
+                const auto transform = object->getTransform();
                 const btTransform closedDoorTransform(
                     Misc::Convert::toBullet(makeObjectOsgQuat(ptr.getCellRef().getPosition())),
                     transform.getOrigin()
@@ -198,7 +198,7 @@ namespace
                         *object->getShapeInstance()->getCollisionShape(),
                         object->getShapeInstance()->getAvoidCollisionShape()
                     },
-                    object->getCollisionObject()->getWorldTransform()
+                    object->getTransform()
                 );
             }
         }
@@ -1033,7 +1033,7 @@ namespace MWWorld
         {
         }
 
-        virtual void doWork()
+        void doWork() override
         {
             try
             {

@@ -114,9 +114,9 @@ public:
         : mActor(actor)
         , mCommanded(false){}
 
-    virtual void visit (MWMechanics::EffectKey key, int effectIndex,
+    void visit (MWMechanics::EffectKey key, int effectIndex,
                         const std::string& sourceName, const std::string& sourceId, int casterActorId,
-                        float magnitude, float remainingTime = -1, float totalTime = -1)
+                        float magnitude, float remainingTime = -1, float totalTime = -1) override
     {
         if (((key.mId == ESM::MagicEffect::CommandHumanoid && mActor.getClass().isNpc())
             || (key.mId == ESM::MagicEffect::CommandCreature && mActor.getTypeName() == typeid(ESM::Creature).name()))
@@ -178,9 +178,9 @@ namespace MWMechanics
         GetStuntedMagickaDuration(const MWWorld::Ptr& actor)
             : mRemainingTime(0.f){}
 
-        virtual void visit (MWMechanics::EffectKey key, int effectIndex,
+        void visit (MWMechanics::EffectKey key, int effectIndex,
                             const std::string& sourceName, const std::string& sourceId, int casterActorId,
-                            float magnitude, float remainingTime = -1, float totalTime = -1)
+                            float magnitude, float remainingTime = -1, float totalTime = -1) override
         {
             if (mRemainingTime == -1) return;
 
@@ -208,9 +208,9 @@ namespace MWMechanics
         {
         }
 
-        virtual void visit (MWMechanics::EffectKey key, int effectIndex,
+        void visit (MWMechanics::EffectKey key, int effectIndex,
                             const std::string& sourceName, const std::string& sourceId, int casterActorId,
-                            float magnitude, float remainingTime = -1, float totalTime = -1)
+                            float magnitude, float remainingTime = -1, float totalTime = -1) override
         {
             if (magnitude <= 0)
                 return;
@@ -228,9 +228,9 @@ namespace MWMechanics
     {
 
     public:
-        virtual void visit (MWMechanics::EffectKey key, int effectIndex,
+        void visit (MWMechanics::EffectKey key, int effectIndex,
                             const std::string& sourceName, const std::string& sourceId, int casterActorId,
-                            float magnitude, float remainingTime = -1, float totalTime = -1)
+                            float magnitude, float remainingTime = -1, float totalTime = -1) override
         {
             if (key.mId != ESM::MagicEffect::Corprus)
                 return;
@@ -253,9 +253,9 @@ namespace MWMechanics
         {
         }
 
-        virtual void visit (MWMechanics::EffectKey key, int effectIndex,
+        void visit (MWMechanics::EffectKey key, int effectIndex,
                             const std::string& sourceName, const std::string& sourceId, int casterActorId,
-                            float magnitude, float remainingTime = -1, float totalTime = -1)
+                            float magnitude, float remainingTime = -1, float totalTime = -1) override
         {
             if (mTrapped)
                 return;
@@ -946,9 +946,9 @@ namespace MWMechanics
             {
             }
 
-            virtual void visit (MWMechanics::EffectKey key, int /*effectIndex*/,
+            void visit (MWMechanics::EffectKey key, int /*effectIndex*/,
                                 const std::string& /*sourceName*/, const std::string& /*sourceId*/, int /*casterActorId*/,
-                                float magnitude, float remainingTime = -1, float /*totalTime*/ = -1)
+                                float magnitude, float remainingTime = -1, float /*totalTime*/ = -1) override
             {
                 if (magnitude > 0 && remainingTime > 0 && remainingTime < mDuration)
                 {
@@ -1261,6 +1261,11 @@ namespace MWMechanics
                 }
             }
         }
+
+        // Summoned creature update visitor assumes the actor belongs to a cell.
+        // This assumption isn't always valid for the player character.
+        if (!ptr.isInCell())
+            return;
 
         bool hasSummonEffect = false;
         for (MagicEffects::Collection::const_iterator it = effects.begin(); it != effects.end(); ++it)
@@ -1925,11 +1930,9 @@ namespace MWMechanics
                 osg::Vec2f newMovement = origMovement + movementCorrection;
                 // Step to the side rather than backward. Otherwise player will be able to push the NPC far away from it's original location.
                 newMovement.y() = std::max(newMovement.y(), 0.f);
+                newMovement.normalize();
                 if (isMoving)
-                { // Keep the original speed.
-                    newMovement.normalize();
-                    newMovement *= origMovement.length();
-                }
+                    newMovement *= origMovement.length(); // Keep the original speed.
                 movement.mPosition[0] = newMovement.x();
                 movement.mPosition[1] = newMovement.y();
                 if (shouldTurnToApproachingActor)

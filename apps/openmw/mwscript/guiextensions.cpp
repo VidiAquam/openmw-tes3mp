@@ -41,7 +41,7 @@ namespace MWScript
 
                 OpEnableWindow (MWGui::GuiWindow window) : mWindow (window) {}
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWBase::Environment::get().getWindowManager()->allow (mWindow);
                 }
@@ -51,7 +51,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWBase::Environment::get().getWindowManager()->enableRest();
                 }
@@ -61,7 +61,7 @@ namespace MWScript
         class OpShowRestMenu : public Interpreter::Opcode0
         {
         public:
-            virtual void execute (Interpreter::Runtime& runtime)
+            void execute (Interpreter::Runtime& runtime) override
             {
                 MWWorld::Ptr bed = R()(runtime, false);
 
@@ -97,7 +97,7 @@ namespace MWScript
                 : mDialogue (dialogue)
                 {}
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWBase::Environment::get().getWindowManager()->pushGuiMode(mDialogue);
                 }
@@ -107,7 +107,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     runtime.push (MWBase::Environment::get().getWindowManager()->readPressedButton());
                 }
@@ -117,7 +117,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     runtime.getContext().report(MWBase::Environment::get().getWindowManager()->toggleFogOfWar() ? "Fog of war -> On"
                                                                                                                 : "Fog of war -> Off");
@@ -128,7 +128,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     runtime.getContext().report(MWBase::Environment::get().getWindowManager()->toggleFullHelp() ? "Full help -> On"
                                                                                                                 : "Full help -> Off");
@@ -139,7 +139,7 @@ namespace MWScript
         {
         public:
 
-            virtual void execute (Interpreter::Runtime& runtime)
+            void execute (Interpreter::Runtime& runtime) override
             {
                 std::string cell = (runtime.getStringLiteral (runtime[0].mInteger));
                 ::Misc::StringUtils::lowerCaseInPlace(cell);
@@ -170,7 +170,7 @@ namespace MWScript
         {
         public:
 
-            virtual void execute (Interpreter::Runtime& runtime)
+            void execute (Interpreter::Runtime& runtime) override
             {
                 const MWWorld::Store<ESM::Cell> &cells =
                     MWBase::Environment::get().getWorld ()->getStore().get<ESM::Cell>();
@@ -193,7 +193,7 @@ namespace MWScript
         {
         public:
 
-            virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+            void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
             {
                 int arg=0;
                 if(arg0>0)
@@ -233,7 +233,7 @@ namespace MWScript
         class OpToggleMenus : public Interpreter::Opcode0
         {
         public:
-            virtual void execute(Interpreter::Runtime &runtime)
+            void execute(Interpreter::Runtime &runtime) override
             {
                 bool state = MWBase::Environment::get().getWindowManager()->toggleHud();
                 runtime.getContext().report(state ? "GUI -> On" : "GUI -> Off");

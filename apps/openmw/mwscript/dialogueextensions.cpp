@@ -40,7 +40,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime, false); // required=false
                     if (ptr.isEmpty())
@@ -81,7 +81,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     std::string quest = runtime.getStringLiteral (runtime[0].mInteger);
                     runtime.pop();
@@ -109,7 +109,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     std::string quest = runtime.getStringLiteral (runtime[0].mInteger);
                     runtime.pop();
@@ -125,7 +125,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     std::string topic = runtime.getStringLiteral (runtime[0].mInteger);
                     runtime.pop();
@@ -151,7 +151,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime, unsigned int arg0)
+                void execute (Interpreter::Runtime& runtime, unsigned int arg0) override
                 {
                     MWBase::DialogueManager* dialogue = MWBase::Environment::get().getDialogueManager();
                     while(arg0>0)
@@ -176,7 +176,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -209,7 +209,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute(Interpreter::Runtime& runtime)
+                void execute(Interpreter::Runtime& runtime) override
                 {
                     MWBase::Environment::get().getDialogueManager()->goodbye();
                 }
@@ -220,7 +220,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
                     Interpreter::Type_Integer value = runtime[0].mInteger;
@@ -235,7 +235,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
                     Interpreter::Type_Integer value = runtime[0].mInteger;
@@ -250,7 +250,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -263,7 +263,7 @@ namespace MWScript
         {
             public:
 
-                virtual void execute (Interpreter::Runtime& runtime)
+                void execute (Interpreter::Runtime& runtime) override
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
@@ -277,7 +277,7 @@ namespace MWScript
         {
         public:
 
-            virtual void execute (Interpreter::Runtime& runtime)
+            void execute (Interpreter::Runtime& runtime) override
             {
                 std::string faction1 = runtime.getStringLiteral (runtime[0].mInteger);
                 runtime.pop();
@@ -296,7 +296,7 @@ namespace MWScript
         {
         public:
 
-            virtual void execute (Interpreter::Runtime& runtime)
+            void execute (Interpreter::Runtime& runtime) override
             {
                 std::string faction1 = runtime.getStringLiteral (runtime[0].mInteger);
                 runtime.pop();
@@ -313,7 +313,7 @@ namespace MWScript
         {
         public:
 
-            virtual void execute (Interpreter::Runtime& runtime)
+            void execute (Interpreter::Runtime& runtime) override
             {
                 std::string faction1 = runtime.getStringLiteral (runtime[0].mInteger);
                 runtime.pop();
@@ -332,7 +332,7 @@ namespace MWScript
         class OpClearInfoActor : public Interpreter::Opcode0
         {
         public:
-            virtual void execute (Interpreter::Runtime& runtime)
+            void execute (Interpreter::Runtime& runtime) override
             {
                 MWWorld::Ptr ptr = R()(runtime);
 

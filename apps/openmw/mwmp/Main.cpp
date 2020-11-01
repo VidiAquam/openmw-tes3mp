@@ -121,7 +121,7 @@ void Main::configure(const boost::program_options::variables_map &variables)
 {
     Main::address = variables["connect"].as<string>();
     Main::serverPassword = variables["password"].as<string>();
-    resourceDir = variables["resources"].as<Files::EscapeHashString>().toStdString();
+    resourceDir = variables["resources"].as<Files::EscapePath>().mPath.string();
 }
 
 bool Main::init(std::vector<std::string> &content, Files::Collections &collections)

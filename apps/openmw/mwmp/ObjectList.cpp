@@ -134,6 +134,8 @@ void ObjectList::addEntireContainer(const MWWorld::Ptr& ptr)
 
     MWWorld::ContainerStore& containerStore = ptr.getClass().getContainerStore(ptr);
 
+    containerStore.resolve();
+
     mwmp::BaseObject baseObject = getBaseObjectFromPtr(ptr);
 
     for (const auto itemPtr : containerStore)

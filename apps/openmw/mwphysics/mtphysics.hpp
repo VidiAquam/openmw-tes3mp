@@ -45,6 +45,16 @@ namespace MWPhysics
             void updateSingleAabb(std::weak_ptr<PtrHolder> ptr);
             bool getLineOfSight(const std::weak_ptr<Actor>& actor1, const std::weak_ptr<Actor>& actor2);
 
+            /*
+                Start of tes3mp addition
+
+                Make it possible to set the physics framerate from elsewhere
+            */
+            void setPhysicsDt(const float physicsDt);
+            /*
+                End of tes3mp addition
+            */
+
         private:
             void syncComputation();
             void worker();
@@ -59,7 +69,17 @@ namespace MWPhysics
             std::vector<ActorFrameData> mActorsFrameData;
             PtrPositionList mMovementResults;
             PtrPositionList mPreviousMovementResults;
-            const float mPhysicsDt;
+
+            /*
+                Start of tes3mp addition
+
+                Make it possible to set the physics framerate from elsewhere
+            */
+            float mPhysicsDt;
+            /*
+                End of tes3mp addition
+            */
+
             float mTimeAccum;
             std::shared_ptr<btCollisionWorld> mCollisionWorld;
             std::vector<LOSRequest> mLOSCache;

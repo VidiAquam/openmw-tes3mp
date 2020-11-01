@@ -172,6 +172,7 @@ namespace MWPhysics
         if (physFramerate > 0 && physFramerate < 100)
         {
             mPhysicsDt = 1.f / physFramerate;
+            mTaskScheduler->setPhysicsDt(mPhysicsDt);
             std::cerr << "Warning: physics framerate was overridden (a new value is " << physFramerate << ")." << std::endl;
         }
         else

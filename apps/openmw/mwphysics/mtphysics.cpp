@@ -522,6 +522,20 @@ namespace MWPhysics
         return !resultCallback.hasHit();
     }
 
+    /*
+        Start of tes3mp addition
+
+        Make it possible to set the physics framerate from elsewhere
+    */
+    void PhysicsTaskScheduler::setPhysicsDt(const float physicsDt)
+    {
+        std::unique_lock lock(mCollisionWorldMutex);
+        mPhysicsDt = physicsDt;
+    }
+    /*
+        End of tes3mp addition
+    */
+
     void PhysicsTaskScheduler::syncComputation()
     {
         while (mRemainingSteps--)

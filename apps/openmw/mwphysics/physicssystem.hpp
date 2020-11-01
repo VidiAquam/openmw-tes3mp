@@ -45,6 +45,7 @@ class btDefaultCollisionConfiguration;
 class btCollisionDispatcher;
 class btCollisionObject;
 class btCollisionShape;
+class btVector3;
 
 namespace MWPhysics
 {
@@ -156,17 +157,17 @@ namespace MWPhysics
             /// target vector hits the collision shape and then calculates distance from the intersection point.
             /// This can be used to find out how much nearer we need to move to the target for a "getHitContact" to be successful.
             /// \note Only Actor targets are supported at the moment.
-            float getHitDistance(const osg::Vec3f& point, const MWWorld::ConstPtr& target) const final;
+            float getHitDistance(const osg::Vec3f& point, const MWWorld::ConstPtr& target) const override;
 
             /// @param me Optional, a Ptr to ignore in the list of results. targets are actors to filter for, ignoring all other actors.
             RayCastingResult castRay(const osg::Vec3f &from, const osg::Vec3f &to, const MWWorld::ConstPtr& ignore = MWWorld::ConstPtr(),
                     std::vector<MWWorld::Ptr> targets = std::vector<MWWorld::Ptr>(),
-                    int mask = CollisionType_World|CollisionType_HeightMap|CollisionType_Actor|CollisionType_Door, int group=0xff) const final;
+                    int mask = CollisionType_World|CollisionType_HeightMap|CollisionType_Actor|CollisionType_Door, int group=0xff) const override;
 
-            RayCastingResult castSphere(const osg::Vec3f& from, const osg::Vec3f& to, float radius) const final;
+            RayCastingResult castSphere(const osg::Vec3f& from, const osg::Vec3f& to, float radius) const override;
 
             /// Return true if actor1 can see actor2.
-            bool getLineOfSight(const MWWorld::ConstPtr& actor1, const MWWorld::ConstPtr& actor2) const final;
+            bool getLineOfSight(const MWWorld::ConstPtr& actor1, const MWWorld::ConstPtr& actor2) const override;
 
             bool isOnGround (const MWWorld::Ptr& actor);
 
@@ -242,12 +243,13 @@ namespace MWPhysics
             bool isAreaOccupiedByOtherActor(const osg::Vec3f& position, const float radius, const MWWorld::ConstPtr& ignore) const;
 
             void reportStats(unsigned int frameNumber, osg::Stats& stats) const;
+            void reportCollision(const btVector3& position, const btVector3& normal);
 
         private:
 
             void updateWater();
 
-            std::vector<ActorFrameData> prepareFrameData();
+            std::vector<ActorFrameData> prepareFrameData(int numSteps);
 
             osg::ref_ptr<SceneUtil::UnrefQueue> mUnrefQueue;
 

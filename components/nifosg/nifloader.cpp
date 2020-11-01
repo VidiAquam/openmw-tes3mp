@@ -43,7 +43,6 @@
 #include <components/sceneutil/morphgeometry.hpp>
 
 #include "matrixtransform.hpp"
-#include "nodeindexholder.hpp"
 #include "particle.hpp"
 
 namespace
@@ -527,7 +526,7 @@ namespace NifOsg
             // - finding the correct emitter node for a particle system
             // - establishing connections to the animated collision shapes, which are handled in a separate loader
             // - finding a random child NiNode in NiBspArrayController
-            node->getOrCreateUserDataContainer()->addUserObject(new NodeIndexHolder(nifNode->recIndex));
+            node->setUserValue("recIndex", nifNode->recIndex);
 
             for (Nif::ExtraPtr e = nifNode->extra; !e.empty(); e = e->next)
             {
@@ -1401,32 +1400,16 @@ namespace NifOsg
                 }
                 // We're going to convert the indices that pixel data contains
                 // into real colors using the palette.
-                const std::vector<unsigned int>& palette = pixelData->palette->colors;
-                if (pixelData->fmt == Nif::NiPixelData::NIPXFMT_PAL8)
+                const auto& palette = pixelData->palette->colors;
+                const int numChannels = pixelformat == GL_RGBA ? 4 : 3;
+                unsigned char* data = new unsigned char[pixels.size() * numChannels];
+                unsigned char* pixel = data;
+                for (unsigned char index : pixels)
                 {
-                    unsigned char* data = new unsigned char[pixels.size() * 3];
-                    for (size_t i = 0; i < pixels.size(); i++)
-                    {
-                        unsigned int color = palette[pixels[i]];
-                        data[i * 3 + 0] = (color >>  0) & 0xFF;
-                        data[i * 3 + 1] = (color >>  8) & 0xFF;
-                        data[i * 3 + 2] = (color >> 16) & 0xFF;
-                    }
-                    image->setImage(width, height, 1, pixelformat, pixelformat, GL_UNSIGNED_BYTE, data, osg::Image::USE_NEW_DELETE);
+                    memcpy(pixel, &palette[index], sizeof(unsigned char) * numChannels);
+                    pixel += numChannels;
                 }
-                else // if (fmt = NIPXFMT_PALA8)
-                {
-                    unsigned char* data = new unsigned char[pixels.size() * 4];
-                    for (size_t i = 0; i < pixels.size(); i++)
-                    {
-                        unsigned int color = palette[pixels[i]];
-                        data[i * 4 + 0] = (color >>  0) & 0xFF;
-                        data[i * 4 + 1] = (color >>  8) & 0xFF;
-                        data[i * 4 + 2] = (color >> 16) & 0xFF;
-                        data[i * 4 + 3] = (color >> 24) & 0xFF;
-                    }
-                    image->setImage(width, height, 1, pixelformat, pixelformat, GL_UNSIGNED_BYTE, data, osg::Image::USE_NEW_DELETE);
-                }
+                image->setImage(width, height, 1, pixelformat, pixelformat, GL_UNSIGNED_BYTE, data, osg::Image::USE_NEW_DELETE);
                 break;
             }
             default:

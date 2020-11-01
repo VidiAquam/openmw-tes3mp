@@ -34,7 +34,7 @@ namespace MWMechanics
         public:
             /// Constructor
             /** \param objectId Reference to object to activate **/
-            AiActivate(const std::string &objectId);
+            explicit AiActivate(const std::string &objectId);
 
             /*
                 Start of tes3mp addition
@@ -42,18 +42,18 @@ namespace MWMechanics
                 Make it possible to initialize an AiActivate package with a specific Ptr
                 as the target, allowing for more fine-tuned activation of objects
             */
-            AiActivate(MWWorld::Ptr object);
+            explicit AiActivate(MWWorld::Ptr object);
             /*
                 End of tes3mp addition
             */
 
-            AiActivate(const ESM::AiSequence::AiActivate* activate);
+            explicit AiActivate(const ESM::AiSequence::AiActivate* activate);
 
-            bool execute (const MWWorld::Ptr& actor, CharacterController& characterController, AiState& state, float duration) final;
+            bool execute (const MWWorld::Ptr& actor, CharacterController& characterController, AiState& state, float duration) override;
 
             static constexpr AiPackageTypeId getTypeId() { return AiPackageTypeId::Activate; }
 
-            void writeState(ESM::AiSequence::AiSequence& sequence) const final;
+            void writeState(ESM::AiSequence::AiSequence& sequence) const override;
 
         private:
             const std::string mObjectId;

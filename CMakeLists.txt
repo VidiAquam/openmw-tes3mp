@@ -1,5 +1,7 @@
 project(OpenMW)
 cmake_minimum_required(VERSION 3.1.0)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # for link time optimization, remove if cmake version is >= 3.9
 if(POLICY CMP0069)
@@ -325,7 +327,11 @@ endif()
 
 set(Boost_NO_BOOST_CMAKE ON)
 
-find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+find_package(Boost 1.6.2 REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+find_package(MyGUI 3.2.2 REQUIRED)
+find_package(SDL2 2.0.9 REQUIRED)
+find_package(OpenAL REQUIRED)
+find_package(Bullet ${REQUIRED_BULLET_VERSION} REQUIRED COMPONENTS BulletCollision LinearMath)
 
 include_directories("."
     SYSTEM
@@ -416,9 +422,6 @@ if (NOT WIN32 AND NOT APPLE)
         "${OpenMW_BINARY_DIR}/org.openmw.cs.desktop")
 endif()
 
-# CXX Compiler settings
-set(CMAKE_CXX_STANDARD 14)
-
 if(OPENMW_LTO_BUILD)
     if(NOT CMAKE_VERSION VERSION_LESS 3.9)
         include(CheckIPOSupported)
@@ -439,7 +442,7 @@ endif()
 
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL GNU OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wundef -Wno-unused-parameter -std=c++14 -pedantic -Wno-long-long")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wundef -Wno-unused-parameter -pedantic -Wno-long-long")
     add_definitions( -DBOOST_NO_CXX11_SCOPED_ENUMS=ON )
 
     if (APPLE)

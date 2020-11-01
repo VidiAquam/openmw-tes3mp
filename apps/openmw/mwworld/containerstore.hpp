@@ -126,8 +126,8 @@ namespace MWWorld
             std::weak_ptr<ResolutionListener> mResolutionListener;
 
             ContainerStoreIterator addImp (const Ptr& ptr, int count, bool markModified = true);
-            void addInitialItem (const std::string& id, const std::string& owner, int count, Misc::Rng::Seed* seed, bool topLevel=true, const std::string& levItem = "");
-            void addInitialItemImp (const MWWorld::Ptr& ptr, const std::string& owner, int count, Misc::Rng::Seed* seed, bool topLevel=true, const std::string& levItem = "");
+            void addInitialItem (const std::string& id, const std::string& owner, int count, Misc::Rng::Seed* seed, bool topLevel=true);
+            void addInitialItemImp (const MWWorld::Ptr& ptr, const std::string& owner, int count, Misc::Rng::Seed* seed, bool topLevel=true);
 
             template<typename T>
             ContainerStoreIterator getState (CellRefList<T>& collection,
@@ -165,7 +165,7 @@ namespace MWWorld
 
             bool hasVisibleItems() const;
 
-            virtual ContainerStoreIterator add (const Ptr& itemPtr, int count, const Ptr& actorPtr, bool allowAutoEquip = true);
+            virtual ContainerStoreIterator add (const Ptr& itemPtr, int count, const Ptr& actorPtr, bool allowAutoEquip = true, bool resolve = true);
             ///< Add the item pointed to by \a ptr to this container. (Stacks automatically if needed)
             ///
             /// \note The item pointed to is not required to exist beyond this function call.
@@ -178,12 +178,12 @@ namespace MWWorld
             ContainerStoreIterator add(const std::string& id, int count, const Ptr& actorPtr);
             ///< Utility to construct a ManualRef and call add(ptr, count, actorPtr, true)
 
-            int remove(const std::string& itemId, int count, const Ptr& actor);
+            int remove(const std::string& itemId, int count, const Ptr& actor, bool equipReplacement = 0, bool resolve = true);
             ///< Remove \a count item(s) designated by \a itemId from this container.
             ///
             /// @return the number of items actually removed
 
-            virtual int remove(const Ptr& item, int count, const Ptr& actor);
+            virtual int remove(const Ptr& item, int count, const Ptr& actor, bool equipReplacement = 0, bool resolve = true);
             ///< Remove \a count item(s) designated by \a item from this inventory.
             ///
             /// @return the number of items actually removed

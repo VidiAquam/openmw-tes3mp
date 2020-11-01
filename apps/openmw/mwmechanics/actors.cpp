@@ -218,7 +218,7 @@ namespace MWMechanics
             if (sourceId != mSpellId)
                 return;
 
-            mMagnitudes.push_back(std::make_pair(key, magnitude));
+            mMagnitudes.emplace_back(key, magnitude);
         }
 
         std::vector<std::pair<MWMechanics::EffectKey, float>> mMagnitudes;
@@ -623,7 +623,9 @@ namespace MWMechanics
 
         if (!actorState.isTurningToPlayer())
         {
-            float angle = std::atan2(dir.x(), dir.y());
+            float from = dir.x();
+            float to = dir.y();
+            float angle = std::atan2(from, to);
             actorState.setAngleToPlayer(angle);
             float deltaAngle = Misc::normalizeAngle(angle - actor.getRefData().getPosition().rot[2]);
             if (!mSmoothMovement || std::abs(deltaAngle) > osg::DegreesToRadians(60.f))
@@ -1844,7 +1846,7 @@ namespace MWMechanics
                     shouldAvoidCollision = true;
                 else if (package->getTypeId() == AiPackageTypeId::Wander && giveWayWhenIdle)
                 {
-                    if (!dynamic_cast<const AiWander*>(package.get())->isStationary())
+                    if (!static_cast<const AiWander*>(package.get())->isStationary())
                         shouldAvoidCollision = true;
                 }
                 else if (package->getTypeId() == AiPackageTypeId::Combat || package->getTypeId() == AiPackageTypeId::Pursue)

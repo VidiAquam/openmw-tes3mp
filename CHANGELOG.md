@@ -6,6 +6,8 @@
     Bug #2069: Fireflies in Fireflies invade Morrowind look wrong
     Bug #2311: Targeted scripts are not properly supported on non-unique RefIDs
     Bug #2473: Unable to overstock merchants
+    Bug #2798: Mutable ESM records
+    Bug #2976 [reopened]: Issues combining settings from the command line and both config files
     Bug #3676: NiParticleColorModifier isn't applied properly
     Bug #3714: Savegame fails to load due to conflict between SpellState and MagicEffects
     Bug #3862: Random container contents behave differently than vanilla
@@ -32,6 +34,7 @@
     Bug #5403: Enchantment effect doesn't show on an enemy during death animation
     Bug #5415: Environment maps in ebony cuirass and HiRez Armors Indoril cuirass don't work
     Bug #5416: Junk non-node records before the root node are not handled gracefully
+    Bug #5422: The player loses all spells when resurrected
     Bug #5424: Creatures do not headtrack player
     Bug #5425: Poison effect only appears for one frame
     Bug #5427: GetDistance unknown ID error is misleading
@@ -55,9 +58,14 @@
     Bug #5603: Setting constant effect cast style doesn't correct effects view
     Bug #5611: Usable items with "0 Uses" should be used only once
     Bug #5622: Can't properly interact with the console when in pause menu
+    Bug #5633: Damage Spells in effect before god mode is enabled continue to hurt the player character and can kill them
+    Bug #5639: Tooltips cover Messageboxes
     Bug #5644: Summon effects running on the player during game initialization cause crashes
+    Bug #5656: Sneaking characters block hits while standing
+    Bug #5661: Region sounds don't play at the right interval
     Feature #390: 3rd person look "over the shoulder"
     Feature #2386: Distant Statics in the form of Object Paging
+    Feature #2404: Levelled List can not be placed into a container
     Feature #4894: Consider actors as obstacles for pathfinding
     Feature #5043: Head Bobbing
     Feature #5297: Add a search function to the "Datafiles" tab of the OpenMW launcher
@@ -71,9 +79,11 @@
     Feature #5545: Option to allow stealing from an unconscious NPC during combat
     Feature #5563: Run physics update in background thread
     Feature #5579: MCP SetAngle enhancement
+    Feature #5580: Service refusal filtering
     Feature #5610: Actors movement should be smoother
     Feature #5642: Ability to attach arrows to actor skeleton instead of bow mesh
     Feature #5649: Skyrim SE compressed BSA format support
+    Feature #5672: Make stretch menu background configuration more accessible
     Task #5480: Drop Qt4 support
     Task #5520: Improve cell name autocompleter implementation
 

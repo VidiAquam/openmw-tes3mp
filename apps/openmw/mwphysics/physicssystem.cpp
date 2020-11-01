@@ -1,5 +1,8 @@
 #include "physicssystem.hpp"
 
+#include <LinearMath/btIDebugDraw.h>
+#include <LinearMath/btVector3.h>
+#include <memory>
 #include <osg/Group>
 #include <osg/Stats>
 
@@ -90,6 +93,7 @@ namespace MWPhysics
         }
 
         mTaskScheduler = std::make_unique<PhysicsTaskScheduler>(mPhysicsDt, mCollisionWorld);
+        mDebugDrawer = std::make_unique<MWRender::DebugDrawer>(mParentNode, mCollisionWorld.get());
     }
 
     PhysicsSystem::~PhysicsSystem()
@@ -124,14 +128,8 @@ namespace MWPhysics
     {
         mDebugDrawEnabled = !mDebugDrawEnabled;
 
-        if (mDebugDrawEnabled && !mDebugDrawer)
-        {
-            mDebugDrawer.reset(new MWRender::DebugDrawer(mParentNode, mCollisionWorld.get()));
-            mCollisionWorld->setDebugDrawer(mDebugDrawer.get());
-            mDebugDrawer->setDebugMode(mDebugDrawEnabled);
-        }
-        else if (mDebugDrawer)
-            mDebugDrawer->setDebugMode(mDebugDrawEnabled);
+        mCollisionWorld->setDebugDrawer(mDebugDrawEnabled ? mDebugDrawer.get() : nullptr);
+        mDebugDrawer->setDebugMode(mDebugDrawEnabled);
         return mDebugDrawEnabled;
     }
 
@@ -197,6 +195,7 @@ namespace MWPhysics
 
         if (result.mHit)
         {
+            reportCollision(Misc::Convert::toBullet(result.mHitPos), Misc::Convert::toBullet(result.mHitNormal));
             return std::make_pair(result.mHitObject, result.mHitPos);
         }
 
@@ -241,7 +240,10 @@ namespace MWPhysics
         {
             PtrHolder* holder = static_cast<PtrHolder*>(resultCallback.mObject->getUserPointer());
             if (holder)
+            {
+                reportCollision(resultCallback.mContactPoint, resultCallback.mContactNormal);
                 return std::make_pair(holder->getPtr(), Misc::Convert::toOsg(resultCallback.mContactPoint));
+            }
         }
         return std::make_pair(MWWorld::Ptr(), osg::Vec3f());
     }
@@ -261,7 +263,7 @@ namespace MWPhysics
 
         auto hitpoint = mTaskScheduler->getHitPoint(rayFrom, targetCollisionObj);
         if (hitpoint)
-            return (point - Misc::Convert::toOsg(hitpoint.get())).length();
+            return (point - Misc::Convert::toOsg(*hitpoint)).length();
 
         // didn't hit the target. this could happen if point is already inside the collision box
         return 0.f;
@@ -670,18 +672,18 @@ namespace MWPhysics
         return false;
     }
 
-    void PhysicsSystem::queueObjectMovement(const MWWorld::Ptr &ptr, const osg::Vec3f &movement)
+    void PhysicsSystem::queueObjectMovement(const MWWorld::Ptr &ptr, const osg::Vec3f &velocity)
     {
         for(auto& movementItem : mMovementQueue)
         {
             if (movementItem.first == ptr)
             {
-                movementItem.second = movement;
+                movementItem.second = velocity;
                 return;
             }
         }
 
-        mMovementQueue.emplace_back(ptr, movement);
+        mMovementQueue.emplace_back(ptr, velocity);
     }
 
     void PhysicsSystem::clearQueuedMovement()
@@ -700,18 +702,16 @@ namespace MWPhysics
 
         mTimeAccum -= numSteps * mPhysicsDt;
 
-        return mTaskScheduler->moveActors(numSteps, mTimeAccum, prepareFrameData(), mStandingCollisions, skipSimulation);
+        return mTaskScheduler->moveActors(numSteps, mTimeAccum, prepareFrameData(numSteps), mStandingCollisions, skipSimulation);
     }
 
-    std::vector<ActorFrameData> PhysicsSystem::prepareFrameData()
+    std::vector<ActorFrameData> PhysicsSystem::prepareFrameData(int numSteps)
     {
         std::vector<ActorFrameData> actorsFrameData;
         actorsFrameData.reserve(mMovementQueue.size());
         const MWBase::World *world = MWBase::Environment::get().getWorld();
-        for (const auto& m : mMovementQueue)
+        for (const auto& [character, movement] : mMovementQueue)
         {
-            const auto& character = m.first;
-            const auto& movement = m.second;
             const auto foundActor = mActors.find(character);
             if (foundActor == mActors.end()) // actor was already removed from the scene
             {
@@ -745,7 +745,12 @@ namespace MWPhysics
             // Slow fall reduces fall speed by a factor of (effect magnitude / 200)
             const float slowFall = 1.f - std::max(0.f, std::min(1.f, effects.get(ESM::MagicEffect::SlowFall).getMagnitude() * 0.005f));
 
-            actorsFrameData.emplace_back(std::move(physicActor), character, mStandingCollisions[character], moveToWaterSurface, movement, slowFall, waterlevel);
+            // Ue current value only if we don't advance the simulation. Otherwise we might get a stale value.
+            MWWorld::Ptr standingOn;
+            if (numSteps == 0)
+                standingOn = mStandingCollisions[character];
+
+            actorsFrameData.emplace_back(std::move(physicActor), character, standingOn, moveToWaterSurface, movement, slowFall, waterlevel);
         }
         mMovementQueue.clear();
         return actorsFrameData;
@@ -777,7 +782,7 @@ namespace MWPhysics
 
     void PhysicsSystem::debugDraw()
     {
-        if (mDebugDrawer)
+        if (mDebugDrawEnabled)
             mDebugDrawer->step();
     }
 
@@ -881,6 +886,12 @@ namespace MWPhysics
         stats.setAttribute(frameNumber, "Physics Actors", mActors.size());
         stats.setAttribute(frameNumber, "Physics Objects", mObjects.size());
         stats.setAttribute(frameNumber, "Physics HeightFields", mHeightFields.size());
+    }
+
+    void PhysicsSystem::reportCollision(const btVector3& position, const btVector3& normal)
+    {
+        if (mDebugDrawEnabled)
+            mDebugDrawer->addCollision(position, normal);
     }
 
     ActorFrameData::ActorFrameData(const std::shared_ptr<Actor>& actor, const MWWorld::Ptr character, const MWWorld::Ptr standingOn,

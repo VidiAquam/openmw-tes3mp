@@ -605,7 +605,7 @@ namespace MWWorld
                 if (iter==mActiveCells.end())
                 {
                     refsToLoad += MWBase::Environment::get().getWorld()->getExterior(x, y)->count();
-                    cellsPositionsToLoad.push_back(std::make_pair(x, y));
+                    cellsPositionsToLoad.emplace_back(x, y);
                 }
             }
         }
@@ -1099,7 +1099,7 @@ namespace MWWorld
                 {
                     continue;
                 }
-                teleportDoors.push_back(MWWorld::ConstPtr(&door, cellStore));
+                teleportDoors.emplace_back(&door, cellStore);
             }
         }
 

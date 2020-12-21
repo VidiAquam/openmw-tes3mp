@@ -185,8 +185,11 @@ void ObjectList::editContainers(MWWorld::CellStore* cellStore)
             MWWorld::ContainerStore& containerStore = ptrFound.getClass().getContainerStore(ptrFound);
 
             // If we are setting the entire contents, clear the current ones
-            if (action == BaseObjectList::SET)
+            if (action == BaseObjectList::SET) {
+                // Resolve contents then clear
+                containerStore.resolve();
                 containerStore.clear();
+            }
 
             bool isLocalDrag = isLocalEvent && containerSubAction == BaseObjectList::DRAG;
             bool isLocalTakeAll = isLocalEvent && containerSubAction == BaseObjectList::TAKE_ALL;

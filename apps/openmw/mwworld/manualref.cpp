@@ -36,7 +36,7 @@ namespace
         MWWorld::LiveCellRef<T> ref(cellRef, base);
 
         refValue = ref;
-        ptrValue = MWWorld::Ptr(&boost::any_cast<MWWorld::LiveCellRef<T>&>(refValue), 0);
+        ptrValue = MWWorld::Ptr(&boost::any_cast<MWWorld::LiveCellRef<T>&>(refValue), nullptr);
     }
 }
 

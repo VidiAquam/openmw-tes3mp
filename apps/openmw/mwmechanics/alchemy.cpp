@@ -269,7 +269,7 @@ const ESM::Potion *MWMechanics::Alchemy::getRecord(const ESM::Potion& toFind) co
             return &(*iter);
     }
 
-    return 0;
+    return nullptr;
 }
 
 void MWMechanics::Alchemy::removeIngredients()

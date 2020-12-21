@@ -267,13 +267,11 @@ if(NOT HAVE_STDINT_H)
 endif()
 
 if(BUILD_OPENMW OR BUILD_OPENCS OR BUILD_OPENMW_MP)
-    find_package(OpenSceneGraph 3.3.4 REQUIRED osgDB osgViewer osgText osgGA osgParticle osgUtil osgFX osgShadow)
+    find_package(OpenSceneGraph 3.3.4 REQUIRED osgDB osgViewer osgText osgGA osgParticle osgUtil osgFX osgShadow osgAnimation)
     include_directories(SYSTEM ${OPENSCENEGRAPH_INCLUDE_DIRS})
-    find_package(SDL2 2.0.9 REQUIRED)
 endif()
 
 IF(BUILD_OPENMW OR BUILD_OPENCS)
-
     set(USED_OSG_PLUGINS
                     osgdb_bmp
                     osgdb_dds
@@ -788,6 +786,12 @@ if (WIN32)
     if (MSVC_VERSION GREATER 1800)
         set(WARNINGS_DISABLE ${WARNINGS_DISABLE} 5026 5027
             5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file (config_begin.hpp, config_end.hpp)
+        )
+    endif()
+    
+    if( "${MyGUI_VERSION}" VERSION_LESS_EQUAL "3.4.0" )
+        set(WARNINGS_DISABLE ${WARNINGS_DISABLE}
+        4866 # compiler may not enforce left-to-right evaluation order for call
         )
     endif()
 

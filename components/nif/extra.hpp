@@ -29,15 +29,13 @@
 namespace Nif
 {
 
-class NiVertWeightsExtraData : public Extra
+struct NiVertWeightsExtraData : public Extra
 {
-public:
     void read(NIFStream *nif) override;
 };
 
-class NiTextKeyExtraData : public Extra
+struct NiTextKeyExtraData : public Extra
 {
-public:
     struct TextKey
     {
         float time;
@@ -48,9 +46,8 @@ public:
     void read(NIFStream *nif) override;
 };
 
-class NiStringExtraData : public Extra
+struct NiStringExtraData : public Extra
 {
-public:
     /* Two known meanings:
        "MRK" - marker, only visible in the editor, not rendered in-game
        "NCO" - no collision
@@ -105,6 +102,13 @@ struct NiFloatExtraData : public Extra
 struct NiFloatsExtraData : public Extra
 {
     std::vector<float> data;
+
+    void read(NIFStream *nif) override;
+};
+
+struct BSBound : public Extra
+{
+    osg::Vec3f center, halfExtents;
 
     void read(NIFStream *nif) override;
 };

@@ -220,6 +220,7 @@ namespace Resource
         , mClampLighting(true)
         , mAutoUseNormalMaps(false)
         , mAutoUseSpecularMaps(false)
+        , mApplyLightingToEnvMaps(false)
         , mInstanceCache(new MultiObjectCache)
         , mSharedStateManager(new SharedStateManager)
         , mImageManager(imageManager)
@@ -284,6 +285,11 @@ namespace Resource
         mSpecularMapPattern = pattern;
     }
 
+    void SceneManager::setApplyLightingToEnvMaps(bool apply)
+    {
+        mApplyLightingToEnvMaps = apply;
+    }
+
     SceneManager::~SceneManager()
     {
         // this has to be defined in the .cpp file as we can't delete incomplete types
@@ -332,17 +338,9 @@ namespace Resource
         Resource::ImageManager* mImageManager;
     };
 
-    std::string getFileExtension(const std::string& file)
-    {
-        size_t extPos = file.find_last_of('.');
-        if (extPos != std::string::npos && extPos+1 < file.size())
-            return file.substr(extPos+1);
-        return std::string();
-    }
-
     osg::ref_ptr<osg::Node> load (Files::IStreamPtr file, const std::string& normalizedFilename, Resource::ImageManager* imageManager, Resource::NifFileManager* nifFileManager)
     {
-        std::string ext = getFileExtension(normalizedFilename);
+        std::string ext = Resource::getFileExtension(normalizedFilename);
         if (ext == "nif")
             return NifOsg::Loader::load(nifFileManager->get(normalizedFilename), imageManager);
         else
@@ -486,7 +484,7 @@ namespace Resource
             }
             catch (std::exception& e)
             {
-                static const char * const sMeshTypes[] = { "nif", "osg", "osgt", "osgb", "osgx", "osg2" };
+                static const char * const sMeshTypes[] = { "nif", "osg", "osgt", "osgb", "osgx", "osg2", "dae" };
 
                 for (unsigned int i=0; i<sizeof(sMeshTypes)/sizeof(sMeshTypes[0]); ++i)
                 {
@@ -770,7 +768,15 @@ namespace Resource
         shaderVisitor->setNormalHeightMapPattern(mNormalHeightMapPattern);
         shaderVisitor->setAutoUseSpecularMaps(mAutoUseSpecularMaps);
         shaderVisitor->setSpecularMapPattern(mSpecularMapPattern);
+        shaderVisitor->setApplyLightingToEnvMaps(mApplyLightingToEnvMaps);
         return shaderVisitor;
     }
 
+    std::string getFileExtension(const std::string& file)
+    {
+        size_t extPos = file.find_last_of('.');
+        if (extPos != std::string::npos && extPos+1 < file.size())
+            return file.substr(extPos+1);
+        return std::string();
+    }
 }

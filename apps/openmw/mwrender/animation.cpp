@@ -16,13 +16,11 @@
 
 #include <components/resource/scenemanager.hpp>
 #include <components/resource/keyframemanager.hpp>
-#include <components/resource/resourcesystem.hpp>
 
 #include <components/misc/constants.hpp>
 #include <components/misc/resourcehelpers.hpp>
 
-#include <components/nifosg/nifloader.hpp> // KeyframeHolder
-#include <components/nifosg/controller.hpp>
+#include <components/sceneutil/keyframe.hpp>
 
 #include <components/vfs/manager.hpp>
 
@@ -36,8 +34,6 @@
 #include <components/sceneutil/util.hpp>
 
 #include <components/settings/settings.hpp>
-
-#include <components/shader/shadermanager.hpp>
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/world.hpp"
@@ -151,7 +147,7 @@ namespace
         }
     };
 
-    float calcAnimVelocity(const NifOsg::TextKeyMap& keys, NifOsg::KeyframeController *nonaccumctrl,
+    float calcAnimVelocity(const SceneUtil::TextKeyMap& keys, SceneUtil::KeyframeController *nonaccumctrl,
                            const osg::Vec3f& accum, const std::string &groupname)
     {
         const std::string start = groupname+": start";
@@ -493,9 +489,8 @@ namespace MWRender
     class TransparencyUpdater : public SceneUtil::StateSetUpdater
     {
     public:
-        TransparencyUpdater(const float alpha, osg::ref_ptr<osg::Uniform> shadowUniform)
+        TransparencyUpdater(const float alpha)
             : mAlpha(alpha)
-            , mShadowUniform(shadowUniform)
         {
         }
 
@@ -509,9 +504,6 @@ namespace MWRender
         {
             osg::BlendFunc* blendfunc (new osg::BlendFunc);
             stateset->setAttributeAndModes(blendfunc, osg::StateAttribute::ON|osg::StateAttribute::OVERRIDE);
-            // TODO: don't do this anymore once custom shadow renderbin is handling it
-            if (mShadowUniform)
-                stateset->addUniform(mShadowUniform);
 
             stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
             stateset->setRenderBinMode(osg::StateSet::OVERRIDE_RENDERBIN_DETAILS);
@@ -533,18 +525,17 @@ namespace MWRender
 
     private:
         float mAlpha;
-        osg::ref_ptr<osg::Uniform> mShadowUniform;
     };
 
     struct Animation::AnimSource
     {
-        osg::ref_ptr<const NifOsg::KeyframeHolder> mKeyframes;
+        osg::ref_ptr<const SceneUtil::KeyframeHolder> mKeyframes;
 
-        typedef std::map<std::string, osg::ref_ptr<NifOsg::KeyframeController> > ControllerMap;
+        typedef std::map<std::string, osg::ref_ptr<SceneUtil::KeyframeController> > ControllerMap;
 
         ControllerMap mControllerMap[Animation::sNumBlendMasks];
 
-        const NifOsg::TextKeyMap& getTextKeys() const;
+        const SceneUtil::TextKeyMap& getTextKeys() const;
     };
 
     void UpdateVfxCallback::operator()(osg::Node* node, osg::NodeVisitor* nv)
@@ -696,7 +687,7 @@ namespace MWRender
         return 0;
     }
 
-    const NifOsg::TextKeyMap &Animation::AnimSource::getTextKeys() const
+    const SceneUtil::TextKeyMap &Animation::AnimSource::getTextKeys() const
     {
         return mKeyframes->mTextKeys;
     }
@@ -737,8 +728,6 @@ namespace MWRender
 
         if(kfname.size() > 4 && kfname.compare(kfname.size()-4, 4, ".nif") == 0)
             kfname.replace(kfname.size()-4, 4, ".kf");
-        else
-            return;
 
         addSingleAnimSource(kfname, baseModel);
 
@@ -761,7 +750,7 @@ namespace MWRender
 
         const NodeMap& nodeMap = getNodeMap();
 
-        for (NifOsg::KeyframeHolder::KeyframeControllerMap::const_iterator it = animsrc->mKeyframes->mKeyframeControllers.begin();
+        for (SceneUtil::KeyframeHolder::KeyframeControllerMap::const_iterator it = animsrc->mKeyframes->mKeyframeControllers.begin();
              it != animsrc->mKeyframes->mKeyframeControllers.end(); ++it)
         {
             std::string bonename = Misc::StringUtils::lowerCase(it->first);
@@ -777,7 +766,7 @@ namespace MWRender
             size_t blendMask = detectBlendMask(node);
 
             // clone the controller, because each Animation needs its own ControllerSource
-            osg::ref_ptr<NifOsg::KeyframeController> cloned = new NifOsg::KeyframeController(*it->second, osg::CopyOp::SHALLOW_COPY);
+            osg::ref_ptr<SceneUtil::KeyframeController> cloned = osg::clone(it->second.get(), osg::CopyOp::SHALLOW_COPY);
             cloned->setSource(mAnimationTimePtr[blendMask]);
 
             animsrc->mControllerMap[blendMask].insert(std::make_pair(bonename, cloned));
@@ -818,7 +807,7 @@ namespace MWRender
         AnimSourceList::const_iterator iter(mAnimSources.begin());
         for(;iter != mAnimSources.end();++iter)
         {
-            const NifOsg::TextKeyMap &keys = (*iter)->getTextKeys();
+            const SceneUtil::TextKeyMap &keys = (*iter)->getTextKeys();
             if (keys.hasGroupStart(anim))
                 return true;
         }
@@ -830,7 +819,7 @@ namespace MWRender
     {
         for(AnimSourceList::const_reverse_iterator iter(mAnimSources.rbegin()); iter != mAnimSources.rend(); ++iter)
         {
-            const NifOsg::TextKeyMap &keys = (*iter)->getTextKeys();
+            const SceneUtil::TextKeyMap &keys = (*iter)->getTextKeys();
 
             const auto found = keys.findGroupStart(groupname);
             if(found != keys.end())
@@ -843,7 +832,7 @@ namespace MWRender
     {
         for(AnimSourceList::const_reverse_iterator iter(mAnimSources.rbegin()); iter != mAnimSources.rend(); ++iter)
         {
-            const NifOsg::TextKeyMap &keys = (*iter)->getTextKeys();
+            const SceneUtil::TextKeyMap &keys = (*iter)->getTextKeys();
 
             for(auto iterKey = keys.begin(); iterKey != keys.end(); ++iterKey)
             {
@@ -855,8 +844,8 @@ namespace MWRender
         return -1.f;
     }
 
-    void Animation::handleTextKey(AnimState &state, const std::string &groupname, NifOsg::TextKeyMap::ConstIterator key,
-                       const NifOsg::TextKeyMap& map)
+    void Animation::handleTextKey(AnimState &state, const std::string &groupname, SceneUtil::TextKeyMap::ConstIterator key,
+                       const SceneUtil::TextKeyMap& map)
     {
         const std::string &evt = key->second;
 
@@ -919,7 +908,7 @@ namespace MWRender
         AnimSourceList::reverse_iterator iter(mAnimSources.rbegin());
         for(;iter != mAnimSources.rend();++iter)
         {
-            const NifOsg::TextKeyMap &textkeys = (*iter)->getTextKeys();
+            const SceneUtil::TextKeyMap &textkeys = (*iter)->getTextKeys();
             if(reset(state, textkeys, groupname, start, stop, startpoint, loopfallback))
             {
                 state.mSource = *iter;
@@ -964,7 +953,7 @@ namespace MWRender
         resetActiveGroups();
     }
 
-    bool Animation::reset(AnimState &state, const NifOsg::TextKeyMap &keys, const std::string &groupname, const std::string &start, const std::string &stop, float startpoint, bool loopfallback)
+    bool Animation::reset(AnimState &state, const SceneUtil::TextKeyMap &keys, const std::string &groupname, const std::string &start, const std::string &stop, float startpoint, bool loopfallback)
     {
         // Look for text keys in reverse. This normally wouldn't matter, but for some reason undeadwolf_2.nif has two
         // separate walkforward keys, and the last one is supposed to be used.
@@ -1194,7 +1183,7 @@ namespace MWRender
         AnimSourceList::const_reverse_iterator animsrc(mAnimSources.rbegin());
         for(;animsrc != mAnimSources.rend();++animsrc)
         {
-            const NifOsg::TextKeyMap &keys = (*animsrc)->getTextKeys();
+            const SceneUtil::TextKeyMap &keys = (*animsrc)->getTextKeys();
             if (keys.hasGroupStart(groupname))
                 break;
         }
@@ -1202,7 +1191,7 @@ namespace MWRender
             return 0.0f;
 
         float velocity = 0.0f;
-        const NifOsg::TextKeyMap &keys = (*animsrc)->getTextKeys();
+        const SceneUtil::TextKeyMap &keys = (*animsrc)->getTextKeys();
 
         const AnimSource::ControllerMap& ctrls = (*animsrc)->mControllerMap[0];
         for (AnimSource::ControllerMap::const_iterator it = ctrls.begin(); it != ctrls.end(); ++it)
@@ -1223,7 +1212,7 @@ namespace MWRender
 
             while(!(velocity > 1.0f) && ++animiter != mAnimSources.rend())
             {
-                const NifOsg::TextKeyMap &keys2 = (*animiter)->getTextKeys();
+                const SceneUtil::TextKeyMap &keys2 = (*animiter)->getTextKeys();
 
                 const AnimSource::ControllerMap& ctrls2 = (*animiter)->mControllerMap[0];
                 for (AnimSource::ControllerMap::const_iterator it = ctrls2.begin(); it != ctrls2.end(); ++it)
@@ -1273,7 +1262,7 @@ namespace MWRender
                 continue;
             }
 
-            const NifOsg::TextKeyMap &textkeys = state.mSource->getTextKeys();
+            const SceneUtil::TextKeyMap &textkeys = state.mSource->getTextKeys();
             auto textkey = textkeys.upperBound(state.getTime());
 
             float timepassed = duration * state.mSpeedMult;
@@ -1773,7 +1762,7 @@ namespace MWRender
         {
             if (mTransparencyUpdater == nullptr)
             {
-                mTransparencyUpdater = new TransparencyUpdater(alpha, mResourceSystem->getSceneManager()->getShaderManager().getShadowMapAlphaTestEnableUniform());
+                mTransparencyUpdater = new TransparencyUpdater(alpha);
                 mObjectRoot->addCullCallback(mTransparencyUpdater);
             }
             else
@@ -1847,7 +1836,7 @@ namespace MWRender
         osg::Callback* cb = node->getUpdateCallback();
         while (cb)
         {
-            if (dynamic_cast<NifOsg::KeyframeController*>(cb))
+            if (dynamic_cast<SceneUtil::KeyframeController*>(cb))
             {
                 foundKeyframeCtrl = true;
                 break;

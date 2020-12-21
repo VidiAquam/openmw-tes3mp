@@ -44,8 +44,7 @@ enum RecordType
   RC_NiTriShape,
   RC_NiTriStrips,
   RC_NiLines,
-  RC_NiRotatingParticles,
-  RC_NiAutoNormalParticles,
+  RC_NiParticles,
   RC_NiBSParticleNode,
   RC_NiCamera,
   RC_NiTexturingProperty,
@@ -94,7 +93,7 @@ enum RecordType
   RC_NiUVData,
   RC_NiPosData,
   RC_NiRotatingParticlesData,
-  RC_NiAutoNormalParticlesData,
+  RC_NiParticlesData,
   RC_NiSequenceStreamHelper,
   RC_NiSourceTexture,
   RC_NiSkinInstance,
@@ -109,7 +108,21 @@ enum RecordType
   RC_NiVectorExtraData,
   RC_NiColorExtraData,
   RC_NiFloatExtraData,
-  RC_NiFloatsExtraData
+  RC_NiFloatsExtraData,
+  RC_NiStringPalette,
+  RC_NiBoolData,
+  RC_NiSkinPartition,
+  RC_BSXFlags,
+  RC_BSBound,
+  RC_bhkBlendController,
+  RC_NiFloatInterpolator,
+  RC_NiPoint3Interpolator,
+  RC_NiBoolInterpolator,
+  RC_NiTransformInterpolator,
+  RC_NiColorInterpolator,
+  RC_BSShaderTextureSet,
+  RC_BSLODTriShape,
+  RC_BSShaderProperty
 };
 
 /// Base class for all records

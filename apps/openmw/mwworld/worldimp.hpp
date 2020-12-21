@@ -168,7 +168,7 @@ namespace MWWorld
             void processDoors(float duration);
             ///< Run physics simulation and modify \a world accordingly.
 
-            void doPhysics(float duration);
+            void doPhysics(float duration, osg::Timer_t frameStart, unsigned int frameNumber, osg::Stats& stats);
             ///< Run physics simulation and modify \a world accordingly.
 
             void updateNavigator();
@@ -296,7 +296,7 @@ namespace MWWorld
             char getGlobalVariableType (const std::string& name) const override;
             ///< Return ' ', if there is no global variable with this name.
 
-            std::string getCellName (const MWWorld::CellStore *cell = 0) const override;
+            std::string getCellName (const MWWorld::CellStore *cell = nullptr) const override;
             ///< Return name of the cell.
             ///
             /// \note If cell==0, the cell the player is currently in will be used instead to
@@ -466,6 +466,9 @@ namespace MWWorld
             MWWorld::Ptr moveObject (const Ptr& ptr, CellStore* newCell, float x, float y, float z, bool movePhysics=true) override;
             ///< @return an updated Ptr
 
+            MWWorld::Ptr moveObjectBy(const Ptr& ptr, osg::Vec3f vec) override;
+            ///< @return an updated Ptr
+
             void scaleObject (const Ptr& ptr, float scale) override;
 
             /// World rotates object, uses radians
@@ -603,7 +606,7 @@ namespace MWWorld
             /// \return pointer to created record
 
             void update (float duration, bool paused) override;
-            void updatePhysics (float duration, bool paused) override;
+            void updatePhysics (float duration, bool paused, osg::Timer_t frameStart, unsigned int frameNumber, osg::Stats& stats) override;
 
             void updateWindowManager () override;
 

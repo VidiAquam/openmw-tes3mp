@@ -130,6 +130,7 @@ namespace MWMechanics
             /*
                 End of tes3mp addition
             */
+            int getLevelUpAttributeIncrease(int attribute) const;
 
             int getLevelupAttributeMultiplier(int attribute) const;
 

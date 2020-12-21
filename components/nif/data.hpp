@@ -32,9 +32,8 @@ namespace Nif
 {
 
 // Common ancestor for several data classes
-class NiGeometryData : public Record
+struct NiGeometryData : public Record
 {
-public:
     std::vector<osg::Vec3f> vertices, normals, tangents, bitangents;
     std::vector<osg::Vec4f> colors;
     std::vector< std::vector<osg::Vec2f> > uvlist;
@@ -44,18 +43,16 @@ public:
     void read(NIFStream *nif) override;
 };
 
-class NiTriShapeData : public NiGeometryData
+struct NiTriShapeData : public NiGeometryData
 {
-public:
     // Triangles, three vertex indices per triangle
     std::vector<unsigned short> triangles;
 
     void read(NIFStream *nif) override;
 };
 
-class NiTriStripsData : public NiGeometryData
+struct NiTriStripsData : public NiGeometryData
 {
-public:
     // Triangle strips, series of vertex indices.
     std::vector<std::vector<unsigned short>> strips;
 
@@ -70,9 +67,8 @@ struct NiLinesData : public NiGeometryData
     void read(NIFStream *nif) override;
 };
 
-class NiAutoNormalParticlesData : public NiGeometryData
+struct NiParticlesData : public NiGeometryData
 {
-public:
     int numParticles{0};
 
     int activeCount;
@@ -84,39 +80,34 @@ public:
     void read(NIFStream *nif) override;
 };
 
-class NiRotatingParticlesData : public NiAutoNormalParticlesData
+struct NiRotatingParticlesData : public NiParticlesData
 {
-public:
     void read(NIFStream *nif) override;
 };
 
-class NiPosData : public Record
+struct NiPosData : public Record
 {
-public:
     Vector3KeyMapPtr mKeyList;
 
     void read(NIFStream *nif) override;
 };
 
-class NiUVData : public Record
+struct NiUVData : public Record
 {
-public:
     FloatKeyMapPtr mKeyList[4];
 
     void read(NIFStream *nif) override;
 };
 
-class NiFloatData : public Record
+struct NiFloatData : public Record
 {
-public:
     FloatKeyMapPtr mKeyList;
 
     void read(NIFStream *nif) override;
 };
 
-class NiPixelData : public Record
+struct NiPixelData : public Record
 {
-public:
     enum Format
     {
         NIPXFMT_RGB8,
@@ -150,17 +141,15 @@ public:
     void post(NIFFile *nif) override;
 };
 
-class NiColorData : public Record
+struct NiColorData : public Record
 {
-public:
     Vector4KeyMapPtr mKeyMap;
 
     void read(NIFStream *nif) override;
 };
 
-class NiVisData : public Record
+struct NiVisData : public Record
 {
-public:
     struct VisData {
         float time;
         bool isSet;
@@ -170,10 +159,10 @@ public:
     void read(NIFStream *nif) override;
 };
 
-class NiSkinInstance : public Record
+struct NiSkinInstance : public Record
 {
-public:
     NiSkinDataPtr data;
+    NiSkinPartitionPtr partitions;
     NodePtr root;
     NodeList bones;
 
@@ -181,9 +170,8 @@ public:
     void post(NIFFile *nif) override;
 };
 
-class NiSkinData : public Record
+struct NiSkinData : public Record
 {
-public:
     struct VertWeight
     {
         unsigned short vertex;
@@ -200,6 +188,25 @@ public:
 
     Transformation trafo;
     std::vector<BoneInfo> bones;
+    NiSkinPartitionPtr partitions;
+
+    void read(NIFStream *nif) override;
+    void post(NIFFile *nif) override;
+};
+
+struct NiSkinPartition : public Record
+{
+    struct Partition
+    {
+        std::vector<unsigned short> bones;
+        std::vector<unsigned short> vertexMap;
+        std::vector<float> weights;
+        std::vector<std::vector<unsigned short>> strips;
+        std::vector<unsigned short> triangles;
+        std::vector<char> boneIndices;
+        void read(NIFStream *nif);
+    };
+    std::vector<Partition> data;
 
     void read(NIFStream *nif) override;
 };
@@ -231,12 +238,23 @@ struct NiKeyframeData : public Record
     void read(NIFStream *nif) override;
 };
 
-class NiPalette : public Record
+struct NiPalette : public Record
 {
-public:
     // 32-bit RGBA colors that correspond to 8-bit indices
     std::vector<unsigned int> colors;
 
+    void read(NIFStream *nif) override;
+};
+
+struct NiStringPalette : public Record
+{
+    std::string palette;
+    void read(NIFStream *nif) override;
+};
+
+struct NiBoolData : public Record
+{
+    ByteKeyMapPtr mKeyList;
     void read(NIFStream *nif) override;
 };
 

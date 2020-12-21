@@ -42,7 +42,8 @@ add_component_dir (vfs
 	
 IF(BUILD_OPENMW OR BUILD_OPENCS)
 add_component_dir (resource
-    scenemanager keyframemanager imagemanager bulletshapemanager bulletshape niffilemanager objectcache multiobjectcache resourcesystem resourcemanager stats
+    scenemanager keyframemanager imagemanager bulletshapemanager bulletshape niffilemanager objectcache multiobjectcache resourcesystem
+    resourcemanager stats animation
     )
 
 add_component_dir (shader
@@ -52,7 +53,7 @@ add_component_dir (shader
 add_component_dir (sceneutil
     clone attach visitor util statesetupdater controller skeleton riggeometry morphgeometry lightcontroller
     lightmanager lightutil positionattitudetransform workqueue unrefqueue pathgridutil waterutil writescene serialize optimizer
-    actorutil detourdebugdraw navmesh agentpath shadow mwshadowtechnique recastmesh
+    actorutil detourdebugdraw navmesh agentpath shadow mwshadowtechnique recastmesh shadowsbin osgacontroller
     )
 
 add_component_dir (nif
@@ -222,12 +223,16 @@ add_component_dir (fallback
     fallback validate
     )
 
-if(NOT WIN32 AND NOT ANDROID)
-    if (BUILD_OPENMW OR BUILD_OPENCS)
-        add_component_dir (crashcatcher
-            crashcatcher
-        )
-    endif()
+if(WIN32)
+    add_component_dir (crashcatcher
+        windows_crashcatcher
+        windows_crashmonitor
+        windows_crashshm
+    )
+elseif(NOT ANDROID)
+    add_component_dir (crashcatcher
+        crashcatcher
+    )
 endif()
 
 if (BUILD_OPENMW OR BUILD_OPENCS)

@@ -49,6 +49,7 @@ Programmers
     Cédric Mocquillon
     Chris Boyce (slothlife)
     Chris Robinson (KittyCat)
+    Coleman Smith (olcoal)
     Cory F. Cohen (cfcohen)
     Cris Mihalache (Mirceam)
     crussell187
@@ -96,6 +97,7 @@ Programmers
     Jan Borsodi (am0s)
     Jason Hooks (jhooks)
     jeaye
+    jefetienne
     Jeffrey Haines (Jyby)
     Jengerer
     Jiří Kuneš (kunesj)
@@ -121,7 +123,6 @@ Programmers
     Lordrea
     Łukasz Gołębiewski (lukago)
     Lukasz Gromanowski (lgro)
-    Manuel Edelmann (vorenon)
     Marc Bouvier (CramitDeFrog)
     Marcin Hulist (Gohan)
     Mark Siewert (mark76)

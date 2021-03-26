@@ -202,6 +202,7 @@ namespace MWMechanics
                 yet to be sent back to us by the server and we should skip over it, because deleting it
                 here would mean it becomes just a regular creature when the server sends it back to us
             */
+            // TODO: Fix conflicts with 580fa78034faaa6b51ca0ae6fdd631ef2e0ef69f
             if (it->second == -1)
             {
                 ++it;

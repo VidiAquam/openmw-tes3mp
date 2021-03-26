@@ -515,6 +515,7 @@ void MWState::StateManager::loadGame (const Character *character, const std::str
                                       character->getPath().filename().string());
 
         MWBase::Environment::get().getWindowManager()->setNewGame(false);
+        MWBase::Environment::get().getWorld()->saveLoaded();
         MWBase::Environment::get().getWorld()->setupPlayer();
         MWBase::Environment::get().getWorld()->renderPlayer();
         MWBase::Environment::get().getWindowManager()->updatePlayer();
@@ -548,6 +549,8 @@ void MWState::StateManager::loadGame (const Character *character, const std::str
             pos.rot[2] = 0;
             MWBase::Environment::get().getWorld()->changeToCell(cell->getCell()->getCellId(), pos, true, false);
         }
+
+        MWBase::Environment::get().getWorld()->updateProjectilesCasters();
 
         // Vanilla MW will restart startup scripts when a save game is loaded. This is unintuitive,
         // but some mods may be using it as a reload detector.

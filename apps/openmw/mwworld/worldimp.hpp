@@ -302,6 +302,7 @@ namespace MWWorld
             ///
             /// \note If cell==0, the cell the player is currently in will be used instead to
             /// generate a name.
+            std::string getCellName(const ESM::Cell* cell) const override;
 
             void removeRefScript (MWWorld::RefData *ref) override;
             //< Remove the script attached to ref from mLocalScripts
@@ -658,6 +659,8 @@ namespace MWWorld
             void applyDeferredPreviewRotationToPlayer(float dt) override;
             void disableDeferredPreviewRotation() override;
 
+            void saveLoaded() override;
+
             void setupPlayer() override;
             void renderPlayer() override;
 
@@ -803,6 +806,7 @@ namespace MWWorld
             void launchMagicBolt (const std::string& spellId, const MWWorld::Ptr& caster, const osg::Vec3f& fallbackDirection) override;
             void launchProjectile (MWWorld::Ptr& actor, MWWorld::Ptr& projectile,
                                            const osg::Vec3f& worldPos, const osg::Quat& orient, MWWorld::Ptr& bow, float speed, float attackStrength) override;
+            void updateProjectilesCasters() override;
 
             void applyLoopingParticles(const MWWorld::Ptr& ptr) override;
 

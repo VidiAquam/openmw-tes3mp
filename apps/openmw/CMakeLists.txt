@@ -168,13 +168,18 @@ include_directories(
 )
 
 target_link_libraries(tes3mp
-    ${OSG_LIBRARIES}
+    # CMake's built-in OSG finder does not use pkgconfig, so we have to
+    # manually ensure the order is correct for inter-library dependencies.
+    # This only makes a difference with `-DOPENMW_USE_SYSTEM_OSG=ON -DOSG_STATIC=ON`.
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/21701
     ${OSGPARTICLE_LIBRARIES}
-    ${OSGUTIL_LIBRARIES}
-    ${OSGDB_LIBRARIES}
     ${OSGVIEWER_LIBRARIES}
     ${OSGGA_LIBRARIES}
     ${OSGSHADOW_LIBRARIES}
+    ${OSGDB_LIBRARIES}
+    ${OSGUTIL_LIBRARIES}
+    ${OSG_LIBRARIES}
+
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
@@ -190,29 +195,33 @@ target_link_libraries(tes3mp
     ${RakNet_LIBRARY}
 )
 
-if (ANDROID)
-    set (OSG_PLUGINS
-        -Wl,--whole-archive
-    )
-    foreach(PLUGIN_NAME ${USED_OSG_PLUGINS})
-        set(OSG_PLUGINS ${OSG_PLUGINS} ${OSG_PLUGINS_DIR}/lib${PLUGIN_NAME}.a)
+if(OSG_STATIC)
+    unset(_osg_plugins_static_files)
+    add_library(openmw_osg_plugins INTERFACE)
+    foreach(_plugin ${USED_OSG_PLUGINS})
+        string(TOUPPER ${_plugin} _plugin_uc)
+        if(OPENMW_USE_SYSTEM_OSG)
+            list(APPEND _osg_plugins_static_files ${${_plugin_uc}_LIBRARY})
+        else()
+            list(APPEND _osg_plugins_static_files $<TARGET_FILE:${${_plugin_uc}_LIBRARY}>)
+            target_link_libraries(openmw_osg_plugins INTERFACE $<TARGET_PROPERTY:${${_plugin_uc}_LIBRARY},LINK_LIBRARIES>)
+            add_dependencies(openmw_osg_plugins ${${_plugin_uc}_LIBRARY})
+        endif()
     endforeach()
+    # We use --whole-archive because OSG plugins use registration.
+    get_whole_archive_options(_opts ${_osg_plugins_static_files})
+    target_link_options(openmw_osg_plugins INTERFACE ${_opts})
+    target_link_libraries(openmw openmw_osg_plugins)
 
-    set (OSG_PLUGINS
-        ${OSG_PLUGINS} -Wl,--no-whole-archive
-    )
+    if(OPENMW_USE_SYSTEM_OSG)
+        # OSG plugin pkgconfig files are missing these dependencies.
+        # https://github.com/openscenegraph/OpenSceneGraph/issues/1052
+        target_link_libraries(openmw freetype jpeg png)
+    endif()
+endif(OSG_STATIC)
 
-    target_link_libraries(tes3mp
-        EGL
-        android
-        log
-        dl
-        z
-        ${OPENSCENEGRAPH_LIBRARIES}
-        freetype
-        jpeg
-        png
-    )
+if (ANDROID)
+    target_link_libraries(tes3mp EGL android log z)
 endif (ANDROID)
 
 if (USE_SYSTEM_TINYXML)

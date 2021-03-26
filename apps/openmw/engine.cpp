@@ -50,6 +50,8 @@
 
 #include <components/detournavigator/navigator.hpp>
 
+#include <components/misc/frameratelimiter.hpp>
+
 #include "mwinput/inputmanagerimp.hpp"
 
 #include "mwgui/windowmanagerimp.hpp"
@@ -1071,13 +1073,15 @@ void OMW::Engine::go()
     }
 
     // Start the main rendering loop
-    osg::Timer frameTimer;
     double simulationTime = 0.0;
+    Misc::FrameRateLimiter frameRateLimiter = Misc::makeFrameRateLimiter(mEnvironment.getFrameRateLimit());
+    const std::chrono::steady_clock::duration maxSimulationInterval(std::chrono::milliseconds(200));
     while (!mViewer->done() && !mEnvironment.getStateManager()->hasQuitRequest())
     {
-        double dt = frameTimer.time_s();
-        frameTimer.setStartTick();
-        dt = std::min(dt, 0.2);
+        const double dt = std::chrono::duration_cast<std::chrono::duration<double>>(std::min(
+            frameRateLimiter.getLastFrameDuration(),
+            maxSimulationInterval
+        )).count();
 
         mViewer->advance(simulationTime);
 
@@ -1125,7 +1129,7 @@ void OMW::Engine::go()
             }
         }
 
-        mEnvironment.limitFrameRate(frameTimer.time_s());
+        frameRateLimiter.limit();
     }
 
     // Save user settings

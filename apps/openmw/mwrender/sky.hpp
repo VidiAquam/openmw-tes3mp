@@ -7,7 +7,6 @@
 
 #include <osg/ref_ptr>
 #include <osg/Vec4f>
-#include <osg/Uniform>
 
 namespace osg
 {
@@ -88,7 +87,7 @@ namespace MWRender
 
         std::string mParticleEffect;
         std::string mRainEffect;
-        float mEffectFade;
+        float mPrecipitationAlpha;
 
         float mRainDiameter;
         float mRainMinHeight;
@@ -157,7 +156,9 @@ namespace MWRender
 
         bool isEnabled();
 
-        bool hasRain();
+        bool hasRain() const;
+
+        float getPrecipitationAlpha() const;
 
         void setRainSpeed(float speed);
 
@@ -180,8 +181,6 @@ namespace MWRender
 
         void setCamera(osg::Camera *camera);
 
-        void setRainIntensityUniform(osg::Uniform *uniform);
-
         float getBaseWindSpeed() const;
 
     private:
@@ -196,14 +195,12 @@ namespace MWRender
         Resource::SceneManager* mSceneManager;
 
         osg::Camera *mCamera;
-        osg::Uniform *mRainIntensityUniform;
 
         osg::ref_ptr<osg::Group> mRootNode;
         osg::ref_ptr<osg::Group> mEarlyRenderBinRoot;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mParticleNode;
         osg::ref_ptr<osg::Node> mParticleEffect;
-        std::vector<osg::ref_ptr<AlphaFader> > mParticleFaders;
         osg::ref_ptr<UnderwaterSwitchCallback> mUnderwaterSwitch;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mCloudNode;
@@ -230,7 +227,6 @@ namespace MWRender
         osg::ref_ptr<osgParticle::BoxPlacer> mPlacer;
         osg::ref_ptr<RainCounter> mCounter;
         osg::ref_ptr<RainShooter> mRainShooter;
-        osg::ref_ptr<RainFader> mRainFader;
 
         bool mCreated;
 
@@ -273,7 +269,7 @@ namespace MWRender
         bool mEnabled;
         bool mSunEnabled;
 
-        float mWeatherAlpha;
+        float mPrecipitationAlpha;
 
         osg::Vec4f mMoonScriptColor;
     };

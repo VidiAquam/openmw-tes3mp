@@ -131,6 +131,7 @@ Programmers
     Martin Otto (MAtahualpa)
     Mateusz Kołaczek (PL_kolek)
     Mateusz Malisz (malice)
+    Max Henzerling (SaintMercury)
     megaton
     Michael Hogan (Xethik)
     Michael Mc Donnell
@@ -215,6 +216,7 @@ Programmers
     Yohaulticetl
     Yuri Krupenin
     zelurker
+    Noah Gooder
 
 Documentation
 -------------

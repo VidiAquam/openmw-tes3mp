@@ -45,6 +45,8 @@
 #include <components/sceneutil/visitor.hpp>
 #include <components/sceneutil/shadow.hpp>
 
+#include <components/nifosg/particle.hpp>
+
 #include "../mwbase/environment.hpp"
 #include "../mwbase/world.hpp"
 
@@ -495,8 +497,6 @@ public:
         // Disable writing to the color buffer. We are using this geometry for visibility tests only.
         osg::ref_ptr<osg::ColorMask> colormask (new osg::ColorMask(0, 0, 0, 0));
         stateset->setAttributeAndModes(colormask, osg::StateAttribute::ON);
-        osg::ref_ptr<osg::PolygonOffset> po (new osg::PolygonOffset( -1., -1. ));
-        stateset->setAttributeAndModes(po, osg::StateAttribute::ON);
 
         mTransform->addChild(queryNode);
 
@@ -593,7 +593,7 @@ private:
         if (queryVisible)
         {
             osg::ref_ptr<osg::Depth> depth (new osg::Depth);
-            depth->setFunction(osg::Depth::LESS);
+            depth->setFunction(osg::Depth::LEQUAL);
             // This is a trick to make fragments written by the query always use the maximum depth value,
             // without having to retrieve the current far clipping distance.
             // We want the sun glare to be "infinitely" far away.
@@ -1111,7 +1111,6 @@ private:
 SkyManager::SkyManager(osg::Group* parentNode, Resource::SceneManager* sceneManager)
     : mSceneManager(sceneManager)
     , mCamera(nullptr)
-    , mRainIntensityUniform(nullptr)
     , mAtmosphereNightRoll(0.f)
     , mCreated(false)
     , mIsStorm(false)
@@ -1137,7 +1136,7 @@ SkyManager::SkyManager(osg::Group* parentNode, Resource::SceneManager* sceneMana
     , mBaseWindSpeed(0.f)
     , mEnabled(true)
     , mSunEnabled(true)
-    , mWeatherAlpha(0.f)
+    , mPrecipitationAlpha(0.f)
 {
     osg::ref_ptr<CameraRelativeTransform> skyroot (new CameraRelativeTransform);
     skyroot->setName("Sky Root");
@@ -1159,11 +1158,6 @@ SkyManager::SkyManager(osg::Group* parentNode, Resource::SceneManager* sceneMana
     mRootNode->addChild(mEarlyRenderBinRoot);
 
     mUnderwaterSwitch = new UnderwaterSwitchCallback(skyroot);
-}
-
-void SkyManager::setRainIntensityUniform(osg::Uniform *uniform)
-{
-    mRainIntensityUniform = uniform;
 }
 
 void SkyManager::create()
@@ -1278,16 +1272,10 @@ private:
 class AlphaFader : public SceneUtil::StateSetUpdater
 {
 public:
-    /// @param alphaUpdate variable which to update with alpha value
-    AlphaFader(float *alphaUpdate)
-        : mAlpha(1.f)
+    /// @param alpha the variable alpha value is recovered from
+    AlphaFader(float& alpha)
+        : mAlpha(alpha)
     {
-        mAlphaUpdate = alphaUpdate;
-    }
-
-    void setAlpha(float alpha)
-    {
-        mAlpha = alpha;
     }
 
     void setDefaults(osg::StateSet* stateset) override
@@ -1301,19 +1289,16 @@ public:
     {
         osg::Material* mat = static_cast<osg::Material*>(stateset->getAttribute(osg::StateAttribute::MATERIAL));
         mat->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4f(0,0,0,mAlpha));
-
-        if (mAlphaUpdate)
-            *mAlphaUpdate = mAlpha;
     }
 
     // Helper for adding AlphaFaders to a subgraph
     class SetupVisitor : public osg::NodeVisitor
     {
     public:
-        SetupVisitor(float *alphaUpdate)
+        SetupVisitor(float &alpha)
             : osg::NodeVisitor(TRAVERSE_ALL_CHILDREN)
+            , mAlpha(alpha)
         {
-            mAlphaUpdate = alphaUpdate;
         }
 
         void apply(osg::Node &node) override
@@ -1333,56 +1318,24 @@ public:
                         callback = callback->getNestedCallback();
                     }
 
-                    osg::ref_ptr<AlphaFader> alphaFader (new AlphaFader(mAlphaUpdate));
+                    osg::ref_ptr<AlphaFader> alphaFader (new AlphaFader(mAlpha));
 
                     if (composite)
                         composite->addController(alphaFader);
                     else
                         node.addUpdateCallback(alphaFader);
-
-                    mAlphaFaders.push_back(alphaFader);
                 }
             }
 
             traverse(node);
         }
 
-        std::vector<osg::ref_ptr<AlphaFader> > getAlphaFaders()
-        {
-            return mAlphaFaders;
-        }
-
     private:
-        std::vector<osg::ref_ptr<AlphaFader> > mAlphaFaders;
-        float *mAlphaUpdate;
+        float &mAlpha;
     };
 
 protected:
-    float mAlpha;
-    float *mAlphaUpdate;
-};
-
-class RainFader : public AlphaFader
-{
-public:
-    RainFader(float *alphaUpdate): AlphaFader(alphaUpdate)
-    {
-    }
-
-    void setDefaults(osg::StateSet* stateset) override
-    {
-        osg::ref_ptr<osg::Material> mat (new osg::Material);
-        mat->setEmission(osg::Material::FRONT_AND_BACK, osg::Vec4f(1,1,1,1));
-        mat->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4f(0,0,0,1));
-        mat->setColorMode(osg::Material::OFF);
-        stateset->setAttributeAndModes(mat, osg::StateAttribute::ON);
-    }
-
-    void apply(osg::StateSet *stateset, osg::NodeVisitor *nv) override
-    {
-        AlphaFader::apply(stateset,nv);
-        *mAlphaUpdate = mAlpha * 2.0;  // mAlpha is limited to 0.6 so multiply by 2 to reach full intensity
-    }
+    float &mAlpha;
 };
 
 void SkyManager::setCamera(osg::Camera *camera)
@@ -1466,6 +1419,37 @@ protected:
     }
 };
 
+class WeatherAlphaOperator : public osgParticle::Operator
+{
+public:
+    WeatherAlphaOperator(float& alpha, bool rain)
+        : mAlpha(alpha)
+        , mIsRain(rain)
+    {
+    }
+
+    osg::Object *cloneType() const override
+    {
+        return nullptr;
+    }
+
+    osg::Object *clone(const osg::CopyOp &op) const override
+    {
+        return nullptr;
+    }
+
+    void operate(osgParticle::Particle *particle, double dt) override
+    {
+        constexpr float rainThreshold = 0.6f; // Rain_Threshold?
+        const float alpha = mIsRain ? mAlpha * rainThreshold : mAlpha;
+        particle->setAlphaRange(osgParticle::rangef(alpha, alpha));
+    }
+
+private:
+    float &mAlpha;
+    bool mIsRain;
+};
+
 void SkyManager::createRain()
 {
     if (mRainNode)
@@ -1473,7 +1457,7 @@ void SkyManager::createRain()
 
     mRainNode = new osg::Group;
 
-    mRainParticleSystem = new osgParticle::ParticleSystem;
+    mRainParticleSystem = new NifOsg::ParticleSystem;
     osg::Vec3 rainRange = osg::Vec3(mRainDiameter, mRainDiameter, (mRainMinHeight+mRainMaxHeight)/2.f);
 
     mRainParticleSystem->setParticleAlignment(osgParticle::ParticleSystem::FIXED);
@@ -1491,6 +1475,12 @@ void SkyManager::createRain()
     stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
     stateset->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
     stateset->setMode(GL_BLEND, osg::StateAttribute::ON);
+
+    osg::ref_ptr<osg::Material> mat (new osg::Material);
+    mat->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4f(1,1,1,1));
+    mat->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4f(1,1,1,1));
+    mat->setColorMode(osg::Material::AMBIENT_AND_DIFFUSE);
+    stateset->setAttributeAndModes(mat, osg::StateAttribute::ON);
 
     osgParticle::Particle& particleTemplate = mRainParticleSystem->getDefaultParticleTemplate();
     particleTemplate.setSizeRange(osgParticle::rangef(5.f, 15.f));
@@ -1524,6 +1514,7 @@ void SkyManager::createRain()
 
     osg::ref_ptr<osgParticle::ModularProgram> program (new osgParticle::ModularProgram);
     program->addOperator(new WrapAroundOperator(mCamera,rainRange));
+    program->addOperator(new WeatherAlphaOperator(mPrecipitationAlpha, true));
     program->setParticleSystem(mRainParticleSystem);
     mRainNode->addChild(program);
 
@@ -1531,8 +1522,7 @@ void SkyManager::createRain()
     mRainNode->addChild(mRainParticleSystem);
     mRainNode->addChild(updater);
 
-    mRainFader = new RainFader(&mWeatherAlpha);
-    mRainNode->addUpdateCallback(mRainFader);
+    // Note: if we ever switch to regular geometry rain, it'll need to use an AlphaFader.
     mRainNode->addCullCallback(mUnderwaterSwitch);
     mRainNode->setNodeMask(Mask_WeatherParticles);
 
@@ -1550,7 +1540,6 @@ void SkyManager::destroyRain()
     mCounter = nullptr;
     mRainParticleSystem = nullptr;
     mRainShooter = nullptr;
-    mRainFader = nullptr;
 }
 
 SkyManager::~SkyManager()
@@ -1579,28 +1568,23 @@ bool SkyManager::isEnabled()
     return mEnabled;
 }
 
-bool SkyManager::hasRain()
+bool SkyManager::hasRain() const
 {
     return mRainNode != nullptr;
+}
+
+float SkyManager::getPrecipitationAlpha() const
+{
+    if (mEnabled && !mIsStorm && (hasRain() || mParticleNode))
+        return mPrecipitationAlpha;
+
+    return 0.f;
 }
 
 void SkyManager::update(float duration)
 {
     if (!mEnabled)
-    {
-        if (mRainIntensityUniform)
-            mRainIntensityUniform->set((float) 0.0);
-
         return;
-    }
-
-    if (mRainIntensityUniform)
-    {
-        if (mIsStorm || (!hasRain() && !mParticleNode))
-            mRainIntensityUniform->set((float) 0.0);
-        else
-            mRainIntensityUniform->set((float) mWeatherAlpha);
-    }
 
     switchUnderwaterRain();
 
@@ -1714,7 +1698,6 @@ void SkyManager::setWeather(const WeatherResult& weather)
         {
             mParticleNode->removeChild(mParticleEffect);
             mParticleEffect = nullptr;
-            mParticleFaders.clear();
         }
 
         if (mCurrentParticleEffect.empty())
@@ -1740,28 +1723,26 @@ void SkyManager::setWeather(const WeatherResult& weather)
             SceneUtil::AssignControllerSourcesVisitor assignVisitor(std::shared_ptr<SceneUtil::ControllerSource>(new SceneUtil::FrameTimeSource));
             mParticleEffect->accept(assignVisitor);
 
-            AlphaFader::SetupVisitor alphaFaderSetupVisitor(&mWeatherAlpha);
+            AlphaFader::SetupVisitor alphaFaderSetupVisitor(mPrecipitationAlpha);
 
             mParticleEffect->accept(alphaFaderSetupVisitor);
-            mParticleFaders = alphaFaderSetupVisitor.getAlphaFaders();
 
             SceneUtil::DisableFreezeOnCullVisitor disableFreezeOnCullVisitor;
             mParticleEffect->accept(disableFreezeOnCullVisitor);
 
-            if (!weather.mIsStorm)
-            {
-                SceneUtil::FindByClassVisitor findPSVisitor(std::string("ParticleSystem"));
-                mParticleEffect->accept(findPSVisitor);
+            SceneUtil::FindByClassVisitor findPSVisitor(std::string("ParticleSystem"));
+            mParticleEffect->accept(findPSVisitor);
 
-                for (unsigned int i = 0; i < findPSVisitor.mFoundNodes.size(); ++i)
-                {
-                    osgParticle::ParticleSystem *ps = static_cast<osgParticle::ParticleSystem *>(findPSVisitor.mFoundNodes[i]);
+            for (unsigned int i = 0; i < findPSVisitor.mFoundNodes.size(); ++i)
+            {
+                osgParticle::ParticleSystem *ps = static_cast<osgParticle::ParticleSystem *>(findPSVisitor.mFoundNodes[i]);
                     
-                    osg::ref_ptr<osgParticle::ModularProgram> program (new osgParticle::ModularProgram);
+                osg::ref_ptr<osgParticle::ModularProgram> program (new osgParticle::ModularProgram);
+                if (!mIsStorm)
                     program->addOperator(new WrapAroundOperator(mCamera,osg::Vec3(1024,1024,800)));
-                    program->setParticleSystem(ps);
-                    mParticleNode->addChild(program);
-                }
+                program->addOperator(new WeatherAlphaOperator(mPrecipitationAlpha, false));
+                program->setParticleSystem(ps);
+                mParticleNode->addChild(program);
             }
         }
     }
@@ -1848,11 +1829,7 @@ void SkyManager::setWeather(const WeatherResult& weather)
 
     mAtmosphereNightNode->setNodeMask(weather.mNight ? ~0 : 0);
 
-    if (mRainFader)
-        mRainFader->setAlpha(weather.mEffectFade * 0.6); // * Rain_Threshold?
-
-    for (AlphaFader* fader : mParticleFaders)
-        fader->setAlpha(weather.mEffectFade);
+    mPrecipitationAlpha = weather.mPrecipitationAlpha;
 }
 
 float SkyManager::getBaseWindSpeed() const

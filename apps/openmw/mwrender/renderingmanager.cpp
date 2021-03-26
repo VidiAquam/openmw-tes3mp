@@ -3,7 +3,6 @@
 #include <limits>
 #include <cstdlib>
 
-#include <osg/AlphaFunc>
 #include <osg/Light>
 #include <osg/LightModel>
 #include <osg/Fog>
@@ -26,6 +25,7 @@
 #include <components/resource/scenemanager.hpp>
 #include <components/resource/keyframemanager.hpp>
 
+#include <components/shader/removedalphafunc.hpp>
 #include <components/shader/shadermanager.hpp>
 
 #include <components/settings/settings.hpp>
@@ -212,6 +212,7 @@ namespace MWRender
         resourceSystem->getSceneManager()->setAutoUseSpecularMaps(Settings::Manager::getBool("auto use object specular maps", "Shaders"));
         resourceSystem->getSceneManager()->setSpecularMapPattern(Settings::Manager::getString("specular map pattern", "Shaders"));
         resourceSystem->getSceneManager()->setApplyLightingToEnvMaps(Settings::Manager::getBool("apply lighting to environment maps", "Shaders"));
+        resourceSystem->getSceneManager()->setConvertAlphaTestToAlphaToCoverage(Settings::Manager::getBool("antialias alpha test", "Shaders") && Settings::Manager::getInt("antialiasing", "Video") > 1);
 
         osg::ref_ptr<SceneUtil::LightManager> sceneRoot = new SceneUtil::LightManager;
         sceneRoot->setLightingMask(Mask_Lighting);
@@ -244,6 +245,7 @@ namespace MWRender
         globalDefines["clamp"] = Settings::Manager::getBool("clamp lighting", "Shaders") ? "1" : "0";
         globalDefines["preLightEnv"] = Settings::Manager::getBool("apply lighting to environment maps", "Shaders") ? "1" : "0";
         globalDefines["radialFog"] = Settings::Manager::getBool("radial fog", "Shaders") ? "1" : "0";
+        globalDefines["useGPUShader4"] = "0";
 
         float groundcoverDistance = (Constants::CellSizeInUnits * std::max(1, Settings::Manager::getInt("distance", "Groundcover")) - 1024) * 0.93;
         globalDefines["groundcoverFadeStart"] = std::to_string(groundcoverDistance * 0.9f);
@@ -310,10 +312,6 @@ namespace MWRender
             groundcoverRoot->setName("Groundcover Root");
             sceneRoot->addChild(groundcoverRoot);
 
-            // Force a unified alpha handling instead of data from meshes
-            osg::ref_ptr<osg::AlphaFunc> alpha = new osg::AlphaFunc(osg::AlphaFunc::GEQUAL, 128.f/255.f);
-            groundcoverRoot->getOrCreateStateSet()->setAttributeAndModes(alpha.get(), osg::StateAttribute::ON);
-
             mGroundcoverUpdater = new GroundcoverUpdater;
             groundcoverRoot->addUpdateCallback(mGroundcoverUpdater);
 
@@ -370,7 +368,6 @@ namespace MWRender
 
         mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager()));
         mSky->setCamera(mViewer->getCamera());
-        mSky->setRainIntensityUniform(mWater->getRainIntensityUniform());
 
         source->setStateSetModes(*mRootNode->getOrCreateStateSet(), osg::StateAttribute::ON);
 
@@ -408,6 +405,11 @@ namespace MWRender
         mRootNode->getOrCreateStateSet()->addUniform(new osg::Uniform("near", mNearClip));
         mRootNode->getOrCreateStateSet()->addUniform(new osg::Uniform("far", mViewDistance));
         mRootNode->getOrCreateStateSet()->addUniform(new osg::Uniform("simpleWater", false));
+
+        // Hopefully, anything genuinely requiring the default alpha func of GL_ALWAYS explicitly sets it
+        mRootNode->getOrCreateStateSet()->setAttribute(Shader::RemovedAlphaFunc::getInstance(GL_ALWAYS));
+        // The transparent renderbin sets alpha testing on because that was faster on old GPUs. It's now slower and breaks things.
+        mRootNode->getOrCreateStateSet()->setMode(GL_ALPHA_TEST, osg::StateAttribute::OFF);
 
         mUniformNear = mRootNode->getOrCreateStateSet()->getUniform("near");
         mUniformFar = mRootNode->getOrCreateStateSet()->getUniform("far");
@@ -456,12 +458,15 @@ namespace MWRender
         mSky->listAssetsToPreload(workItem->mModels, workItem->mTextures);
         mWater->listAssetsToPreload(workItem->mTextures);
 
-        const char* basemodels[] = {"xbase_anim", "xbase_anim.1st", "xbase_anim_female", "xbase_animkna"};
-        for (size_t i=0; i<sizeof(basemodels)/sizeof(basemodels[0]); ++i)
-        {
-            workItem->mModels.push_back(std::string("meshes/") + basemodels[i] + ".nif");
-            workItem->mKeyframes.push_back(std::string("meshes/") + basemodels[i] + ".kf");
-        }
+        workItem->mModels.push_back(Settings::Manager::getString("xbaseanim", "Models"));
+        workItem->mModels.push_back(Settings::Manager::getString("xbaseanim1st", "Models"));
+        workItem->mModels.push_back(Settings::Manager::getString("xbaseanimfemale", "Models"));
+        workItem->mModels.push_back(Settings::Manager::getString("xargonianswimkna", "Models"));
+
+        workItem->mKeyframes.push_back(Settings::Manager::getString("xbaseanimkf", "Models"));
+        workItem->mKeyframes.push_back(Settings::Manager::getString("xbaseanim1stkf", "Models"));
+        workItem->mKeyframes.push_back(Settings::Manager::getString("xbaseanimfemalekf", "Models"));
+        workItem->mKeyframes.push_back(Settings::Manager::getString("xargonianswimknakf", "Models"));
 
         workItem->mTextures.emplace_back("textures/_land_default.dds");
 
@@ -654,6 +659,9 @@ namespace MWRender
         reportStats();
 
         mUnrefQueue->flush(mWorkQueue.get());
+
+        float rainIntensity = mSky->getPrecipitationAlpha();
+        mWater->setRainIntensity(rainIntensity);
 
         if (!paused)
         {

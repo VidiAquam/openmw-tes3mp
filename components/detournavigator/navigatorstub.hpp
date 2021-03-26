@@ -66,7 +66,7 @@ namespace DetourNavigator
 
         void update(const osg::Vec3f& /*playerPosition*/) override {}
 
-        void setUpdatesEnabled(bool enabled) override {}
+        void setUpdatesEnabled(bool /*enabled*/) override {}
 
         void wait() override {}
 
@@ -90,6 +90,11 @@ namespace DetourNavigator
         RecastMeshTiles getRecastMeshTiles() override
         {
             return {};
+        }
+
+        float getMaxNavmeshAreaRealRadius() const override
+        {
+            return std::numeric_limits<float>::max();
         }
 
     private:

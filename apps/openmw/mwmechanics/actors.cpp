@@ -379,7 +379,11 @@ namespace MWMechanics
         if (actor != MWMechanics::getPlayer())
             return;
 
-        MWWorld::Ptr newItem = *store.getSlot(slot);
+        MWWorld::Ptr newItem;
+        auto it = store.getSlot(slot);
+        // Equip can fail because beast races cannot equip boots/helmets
+        if(it != store.end())
+            newItem = *it;
 
         if (newItem.isEmpty() || boundPtr != newItem)
             return;
@@ -996,29 +1000,29 @@ namespace MWMechanics
             if (actor.getClass().hasInventoryStore(actor))
                 actor.getClass().getInventoryStore(actor).purgeEffect(ESM::MagicEffect::Poison);
         }
-        else if (effects.get(ESM::MagicEffect::CureParalyzation).getModifier() > 0)
+        if (effects.get(ESM::MagicEffect::CureParalyzation).getModifier() > 0)
         {
             creatureStats.getActiveSpells().purgeEffect(ESM::MagicEffect::Paralyze);
             creatureStats.getSpells().purgeEffect(ESM::MagicEffect::Paralyze);
             if (actor.getClass().hasInventoryStore(actor))
                 actor.getClass().getInventoryStore(actor).purgeEffect(ESM::MagicEffect::Paralyze);
         }
-        else if (effects.get(ESM::MagicEffect::CureCommonDisease).getModifier() > 0)
+        if (effects.get(ESM::MagicEffect::CureCommonDisease).getModifier() > 0)
         {
             creatureStats.getSpells().purgeCommonDisease();
         }
-        else if (effects.get(ESM::MagicEffect::CureBlightDisease).getModifier() > 0)
+        if (effects.get(ESM::MagicEffect::CureBlightDisease).getModifier() > 0)
         {
             creatureStats.getSpells().purgeBlightDisease();
         }
-        else if (effects.get(ESM::MagicEffect::CureCorprusDisease).getModifier() > 0)
+        if (effects.get(ESM::MagicEffect::CureCorprusDisease).getModifier() > 0)
         {
             creatureStats.getActiveSpells().purgeCorprusDisease();
             creatureStats.getSpells().purgeCorprusDisease();
             if (actor.getClass().hasInventoryStore(actor))
                 actor.getClass().getInventoryStore(actor).purgeEffect(ESM::MagicEffect::Corprus, true);
         }
-        else if (effects.get(ESM::MagicEffect::RemoveCurse).getModifier() > 0)
+        if (effects.get(ESM::MagicEffect::RemoveCurse).getModifier() > 0)
         {
             creatureStats.getSpells().purgeCurses();
         }
@@ -2022,14 +2026,11 @@ namespace MWMechanics
     {
         if(!paused)
         {
-            static float timerUpdateAITargets = 0;
             static float timerUpdateHeadTrack = 0;
             static float timerUpdateEquippedLight = 0;
             static float timerUpdateHello = 0;
             const float updateEquippedLightInterval = 1.0f;
 
-            // target lists get updated once every 1.0 sec
-            if (timerUpdateAITargets >= 1.0f) timerUpdateAITargets = 0;
             if (timerUpdateHeadTrack >= 0.3f) timerUpdateHeadTrack = 0;
             if (timerUpdateHello >= 0.25f) timerUpdateHello = 0;
             if (mTimerDisposeSummonsCorpses >= 0.2f) mTimerDisposeSummonsCorpses = 0;
@@ -2124,6 +2125,8 @@ namespace MWMechanics
 
                 iter->first.getClass().getCreatureStats(iter->first).getActiveSpells().update(duration);
 
+                const Misc::TimerStatus engageCombatTimerStatus = iter->second->updateEngageCombatTimer(duration);
+
                 // For dead actors we need to update looping spell particles
                 if (iter->first.getClass().getCreatureStats(iter->first).isDead())
                 {
@@ -2161,7 +2164,7 @@ namespace MWMechanics
 
                     if (inProcessingRange && (aiActive || isLocalActor || isDedicatedActor))
                     {
-                        if (timerUpdateAITargets == 0 && (isLocalActor || aiActive))
+                        if (engageCombatTimerStatus == Misc::TimerStatus::Elapsed && (isLocalActor || aiActive))
                         {
                             if (!isPlayer)
                                 adjustCommandedActor(iter->first);
@@ -2251,7 +2254,6 @@ namespace MWMechanics
             if (avoidCollisions)
                 predictAndAvoidCollisions();
 
-            timerUpdateAITargets += duration;
             timerUpdateHeadTrack += duration;
             timerUpdateEquippedLight += duration;
             timerUpdateHello += duration;

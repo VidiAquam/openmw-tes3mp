@@ -172,7 +172,7 @@ namespace MWPhysics
         if (physFramerate > 0 && physFramerate < 100)
         {
             mPhysicsDt = 1.f / physFramerate;
-            mTaskScheduler->setPhysicsDt(mPhysicsDt);
+            mTaskScheduler->setDefaultPhysicsDt(mPhysicsDt);
             std::cerr << "Warning: physics framerate was overridden (a new value is " << physFramerate << ")." << std::endl;
         }
         else
@@ -479,20 +479,20 @@ namespace MWPhysics
         return heightField->second.get();
     }
 
-    void PhysicsSystem::addObject (const MWWorld::Ptr& ptr, const std::string& mesh, osg::Quat rotation, int collisionType)
+    void PhysicsSystem::addObject (const MWWorld::Ptr& ptr, const std::string& mesh, int collisionType)
     {
         osg::ref_ptr<Resource::BulletShapeInstance> shapeInstance = mShapeManager->getInstance(mesh);
         if (!shapeInstance || !shapeInstance->getCollisionShape())
             return;
 
-        auto obj = std::make_shared<Object>(ptr, shapeInstance, rotation, collisionType, mTaskScheduler.get());
+        auto obj = std::make_shared<Object>(ptr, shapeInstance, collisionType, mTaskScheduler.get());
         mObjects.emplace(ptr, obj);
 
         if (obj->isAnimated())
             mAnimatedObjects.insert(obj.get());
     }
 
-    void PhysicsSystem::remove(const MWWorld::Ptr &ptr, bool keepObject)
+    void PhysicsSystem::remove(const MWWorld::Ptr &ptr)
     {
         ObjectMap::iterator found = mObjects.find(ptr);
         if (found != mObjects.end())
@@ -502,8 +502,7 @@ namespace MWPhysics
 
             mAnimatedObjects.erase(found->second.get());
 
-            if (!keepObject)
-                mObjects.erase(found);
+            mObjects.erase(found);
         }
 
         ActorMap::iterator foundActor = mActors.find(ptr);
@@ -628,7 +627,9 @@ namespace MWPhysics
                 return object->getCollisionObject();
             return nullptr;
         }();
-        assert(caster);
+
+        if (caster == nullptr)
+            Log(Debug::Warning) << "No caster for projectile " << projectileId;
 
         ProjectileConvexCallback resultCallback(caster, btFrom, btTo, projectile);
         resultCallback.m_collisionFilterMask = 0xff;
@@ -645,12 +646,12 @@ namespace MWPhysics
         mTaskScheduler->updateSingleAabb(foundProjectile->second);
     }
 
-    void PhysicsSystem::updateRotation(const MWWorld::Ptr &ptr, osg::Quat rotate)
+    void PhysicsSystem::updateRotation(const MWWorld::Ptr &ptr)
     {
         ObjectMap::iterator found = mObjects.find(ptr);
         if (found != mObjects.end())
         {
-            found->second->setRotation(rotate);
+            found->second->setRotation(Misc::Convert::toBullet(ptr.getRefData().getBaseNode()->getAttitude()));
             mTaskScheduler->updateSingleAabb(found->second);
             return;
         }
@@ -659,7 +660,7 @@ namespace MWPhysics
         {
             if (!foundActor->second->isRotationallyInvariant())
             {
-                foundActor->second->setRotation(rotate);
+                foundActor->second->updateRotation();
                 mTaskScheduler->updateSingleAabb(foundActor->second);
             }
             return;
@@ -705,13 +706,27 @@ namespace MWPhysics
         mActors.emplace(ptr, std::move(actor));
     }
 
-    int PhysicsSystem::addProjectile (const MWWorld::Ptr& caster, const osg::Vec3f& position, float radius, bool canTraverseWater)
+    int PhysicsSystem::addProjectile (const MWWorld::Ptr& caster, const osg::Vec3f& position, const std::string& mesh, bool computeRadius, bool canTraverseWater)
     {
+        osg::ref_ptr<Resource::BulletShapeInstance> shapeInstance = mShapeManager->getInstance(mesh);
+        assert(shapeInstance);
+        float radius = computeRadius ? shapeInstance->mCollisionBox.extents.length() / 2.f : 1.f;
+
         mProjectileId++;
+
         auto projectile = std::make_shared<Projectile>(caster, position, radius, canTraverseWater, mTaskScheduler.get(), this);
         mProjectiles.emplace(mProjectileId, std::move(projectile));
 
         return mProjectileId;
+    }
+
+    void PhysicsSystem::setCaster(int projectileId, const MWWorld::Ptr& caster)
+    {
+        const auto foundProjectile = mProjectiles.find(projectileId);
+        assert(foundProjectile != mProjectiles.end());
+        auto* projectile = foundProjectile->second.get();
+
+        projectile->setCaster(caster);
     }
 
     bool PhysicsSystem::toggleCollisionMode()
@@ -752,19 +767,14 @@ namespace MWPhysics
     {
         mTimeAccum += dt;
 
-        const int maxAllowedSteps = 20;
-        int numSteps = mTimeAccum / mPhysicsDt;
-        numSteps = std::min(numSteps, maxAllowedSteps);
-
-        mTimeAccum -= numSteps * mPhysicsDt;
-
         if (skipSimulation)
             return mTaskScheduler->resetSimulation(mActors);
 
-        return mTaskScheduler->moveActors(numSteps, mTimeAccum, prepareFrameData(numSteps), frameStart, frameNumber, stats);
+        // modifies mTimeAccum
+        return mTaskScheduler->moveActors(mTimeAccum, prepareFrameData(mTimeAccum >= mPhysicsDt), frameStart, frameNumber, stats);
     }
 
-    std::vector<ActorFrameData> PhysicsSystem::prepareFrameData(int numSteps)
+    std::vector<ActorFrameData> PhysicsSystem::prepareFrameData(bool willSimulate)
     {
         std::vector<ActorFrameData> actorsFrameData;
         actorsFrameData.reserve(mMovementQueue.size());
@@ -804,7 +814,7 @@ namespace MWPhysics
 
             // Ue current value only if we don't advance the simulation. Otherwise we might get a stale value.
             MWWorld::Ptr standingOn;
-            if (numSteps == 0)
+            if (!willSimulate)
                 standingOn = physicActor->getStandingOnPtr();
 
             actorsFrameData.emplace_back(std::move(physicActor), standingOn, moveToWaterSurface, movement, slowFall, waterlevel);
@@ -969,6 +979,10 @@ namespace MWPhysics
     void ActorFrameData::updatePosition()
     {
         mActorRaw->updateWorldPosition();
+        // If physics runs "fast enough", position are interpolated without simulation
+        // By calling this here, we are sure that offsets are applied at least once per frame,
+        // regardless of simulation speed.
+        mActorRaw->applyOffsetChange();
         mPosition = mActorRaw->getPosition();
         if (mMoveToWaterSurface)
         {

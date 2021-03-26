@@ -121,10 +121,11 @@ namespace MWPhysics
             void setWaterHeight(float height);
             void disableWater();
 
-            void addObject (const MWWorld::Ptr& ptr, const std::string& mesh, osg::Quat rotation, int collisionType = CollisionType_World);
+            void addObject (const MWWorld::Ptr& ptr, const std::string& mesh, int collisionType = CollisionType_World);
             void addActor (const MWWorld::Ptr& ptr, const std::string& mesh);
 
-            int addProjectile(const MWWorld::Ptr& caster, const osg::Vec3f& position, float radius, bool canTraverseWater);
+            int addProjectile(const MWWorld::Ptr& caster, const osg::Vec3f& position, const std::string& mesh, bool computeRadius, bool canTraverseWater);
+            void setCaster(int projectileId, const MWWorld::Ptr& caster);
             void updateProjectile(const int projectileId, const osg::Vec3f &position) const;
             void removeProjectile(const int projectileId);
 
@@ -138,10 +139,10 @@ namespace MWPhysics
             Projectile* getProjectile(int projectileId) const;
 
             // Object or Actor
-            void remove (const MWWorld::Ptr& ptr, bool keepObject = false);
+            void remove (const MWWorld::Ptr& ptr);
 
             void updateScale (const MWWorld::Ptr& ptr);
-            void updateRotation (const MWWorld::Ptr& ptr, osg::Quat rotate);
+            void updateRotation (const MWWorld::Ptr& ptr);
             void updatePosition (const MWWorld::Ptr& ptr);
 
             void addHeightField (const float* heights, int x, int y, float triSize, float sqrtVerts, float minH, float maxH, const osg::Object* holdObject);
@@ -261,7 +262,7 @@ namespace MWPhysics
 
             void updateWater();
 
-            std::vector<ActorFrameData> prepareFrameData(int numSteps);
+            std::vector<ActorFrameData> prepareFrameData(bool willSimulate);
 
             osg::ref_ptr<SceneUtil::UnrefQueue> mUnrefQueue;
 

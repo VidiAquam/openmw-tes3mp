@@ -255,7 +255,7 @@ namespace MWScript
                 {
                     MWWorld::Ptr ptr = R()(runtime);
 
-                    runtime.push(ptr.getClass().getCreatureStats (ptr).getAiSetting (mIndex).getModified());
+                    runtime.push(ptr.getClass().getCreatureStats (ptr).getAiSetting (mIndex).getModified(false));
                 }
         };
         template<class R>
@@ -301,9 +301,9 @@ namespace MWScript
                     int initialValue = stat.getBase();
                     /*
                         End of tes3mp addition
-                    */                    
+                    */
 
-                    stat.setModified(value, 0);
+                    ptr.getClass().getCreatureStats(ptr).setAiSetting(mIndex, value);
                     ptr.getClass().setBaseAISetting(ptr.getCellRef().getRefId(), mIndex, value);
 
                     /*

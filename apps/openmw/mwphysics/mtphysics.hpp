@@ -13,6 +13,7 @@
 
 #include "physicssystem.hpp"
 #include "ptrholder.hpp"
+#include "components/misc/budgetmeasurement.hpp"
 
 namespace Misc
 {
@@ -32,7 +33,7 @@ namespace MWPhysics
             /// @param timeAccum accumulated time from previous run to interpolate movements
             /// @param actorsData per actor data needed to compute new positions
             /// @return new position of each actor
-            const std::vector<MWWorld::Ptr>& moveActors(int numSteps, float timeAccum, std::vector<ActorFrameData>&& actorsData, osg::Timer_t frameStart, unsigned int frameNumber, osg::Stats& stats);
+            const std::vector<MWWorld::Ptr>& moveActors(float & timeAccum, std::vector<ActorFrameData>&& actorsData, osg::Timer_t frameStart, unsigned int frameNumber, osg::Stats& stats);
 
             const std::vector<MWWorld::Ptr>& resetSimulation(const ActorMap& actors);
 
@@ -54,7 +55,7 @@ namespace MWPhysics
 
                 Make it possible to set the physics framerate from elsewhere
             */
-            void setPhysicsDt(const float physicsDt);
+            void setDefaultPhysicsDt(const float physicsDt);
             /*
                 End of tes3mp addition
             */
@@ -68,21 +69,13 @@ namespace MWPhysics
             void updateAabbs();
             void updatePtrAabb(const std::weak_ptr<PtrHolder>& ptr);
             void updateStats(osg::Timer_t frameStart, unsigned int frameNumber, osg::Stats& stats);
+            std::tuple<int, float> calculateStepConfig(float timeAccum) const;
 
             std::unique_ptr<WorldFrameData> mWorldFrameData;
             std::vector<ActorFrameData> mActorsFrameData;
-
-            /*
-                Start of tes3mp addition
-
-                Make it possible to set the physics framerate from elsewhere
-            */
-            float mPhysicsDt;
-            /*
-                End of tes3mp addition
-            */
-
             std::vector<MWWorld::Ptr> mMovedActors;
+            float mDefaultPhysicsDt;
+            float mPhysicsDt;
             float mTimeAccum;
             std::shared_ptr<btCollisionWorld> mCollisionWorld;
             std::vector<LOSRequest> mLOSCache;
@@ -114,6 +107,12 @@ namespace MWPhysics
 
             unsigned int mFrameNumber;
             const osg::Timer* mTimer;
+
+            int mPrevStepCount;
+            Misc::BudgetMeasurement mBudget;
+            Misc::BudgetMeasurement mAsyncBudget;
+            unsigned int mBudgetCursor;
+            osg::Timer_t mAsyncStartTime;
             osg::Timer_t mTimeBegin;
             osg::Timer_t mTimeEnd;
             osg::Timer_t mFrameStart;

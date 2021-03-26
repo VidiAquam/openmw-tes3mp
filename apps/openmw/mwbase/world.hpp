@@ -195,6 +195,7 @@ namespace MWBase
             ///
             /// \note If cell==0, the cell the player is currently in will be used instead to
             /// generate a name.
+            virtual std::string getCellName(const ESM::Cell* cell) const = 0;
 
             virtual void removeRefScript (MWWorld::RefData *ref) = 0;
             //< Remove the script attached to ref from mLocalScripts
@@ -563,6 +564,8 @@ namespace MWBase
             virtual void applyDeferredPreviewRotationToPlayer(float dt) = 0;
             virtual void disableDeferredPreviewRotation() = 0;
 
+            virtual void saveLoaded() = 0;
+
             virtual void setupPlayer() = 0;
             virtual void renderPlayer() = 0;
 
@@ -709,6 +712,7 @@ namespace MWBase
             virtual void launchMagicBolt (const std::string& spellId, const MWWorld::Ptr& caster, const osg::Vec3f& fallbackDirection) = 0;
             virtual void launchProjectile (MWWorld::Ptr& actor, MWWorld::Ptr& projectile,
                                            const osg::Vec3f& worldPos, const osg::Quat& orient, MWWorld::Ptr& bow, float speed, float attackStrength) = 0;
+            virtual void updateProjectilesCasters() = 0;
 
             virtual void applyLoopingParticles(const MWWorld::Ptr& ptr) = 0;
 

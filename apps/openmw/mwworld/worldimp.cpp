@@ -700,13 +700,19 @@ namespace MWWorld
     {
         if (!cell)
             cell = mWorldScene->getCurrentCell();
+        return getCellName(cell->getCell());
+    }
 
-        if (!cell->getCell()->isExterior() || !cell->getCell()->mName.empty())
-            return cell->getCell()->mName;
+    std::string World::getCellName(const ESM::Cell* cell) const
+    {
+        if (cell)
+        {
+            if (!cell->isExterior() || !cell->mName.empty())
+                return cell->mName;
 
-        if (const ESM::Region* region = mStore.get<ESM::Region>().search (cell->getCell()->mRegion))
-            return region->mName;
-
+            if (const ESM::Region* region = mStore.get<ESM::Region>().search (cell->mRegion))
+                return region->mName;
+        }
         return mStore.get<ESM::GameSetting>().find ("sDefaultCellname")->mValue.getString();
     }
 
@@ -1502,11 +1508,23 @@ namespace MWWorld
 
     void World::adjustPosition(const Ptr &ptr, bool force)
     {
+        if (ptr.isEmpty())
+        {
+            Log(Debug::Warning) << "Unable to adjust position for empty object";
+            return;
+        }
+
         osg::Vec3f pos (ptr.getRefData().getPosition().asVec3());
 
         if(!ptr.getRefData().getBaseNode())
         {
             // will be adjusted when Ptr's cell becomes active
+            return;
+        }
+
+        if (!ptr.isInCell())
+        {
+            Log(Debug::Warning) << "Unable to adjust position for object '" << ptr.getCellRef().getRefId() << "' - it has no cell";
             return;
         }
 
@@ -1573,7 +1591,7 @@ namespace MWWorld
             mWorldScene->removeFromPagedRefs(ptr);
 
             mRendering->rotateObject(ptr, rotate);
-            mPhysics->updateRotation(ptr, rotate);
+            mPhysics->updateRotation(ptr);
 
             if (const auto object = mPhysics->getObject(ptr))
                 updateNavigatorObject(object);
@@ -2046,6 +2064,13 @@ namespace MWWorld
         if (!paused)
         {
             doPhysics (duration, frameStart, frameNumber, stats);
+        }
+        else
+        {
+            // zero the async stats if we are paused
+            stats.setAttribute(frameNumber, "physicsworker_time_begin", 0);
+            stats.setAttribute(frameNumber, "physicsworker_time_taken", 0);
+            stats.setAttribute(frameNumber, "physicsworker_time_end", 0);
         }
     }
 
@@ -2703,6 +2728,11 @@ namespace MWWorld
         mRendering->getCamera()->adjustCameraDistance(dist);
     }
 
+    void World::saveLoaded()
+    {
+        mStore.validateDynamic();
+    }
+
     void World::setupPlayer()
     {
         const ESM::NPC *player = mStore.get<ESM::NPC>().find("player");
@@ -2919,7 +2949,7 @@ namespace MWWorld
         {
             const Scene::CellStoreCollection& activeCells = mWorldScene->getActiveCells();
             mwmp::CellController *cellController = mwmp::Main::get().getCellController();
-            mWorldScene->unloadCell(*activeCells.find(cellController->getCellStore(cell)));
+            mWorldScene->unloadCell(activeCells.find(cellController->getCellStore(cell)));
         }
     }
     /*
@@ -2986,7 +3016,7 @@ namespace MWWorld
                 ESM::Cell iterCell = *(*iter)->getCell();
                 MWWorld::CellStore * cellStore = cellController->getCellStore(iterCell);
                 
-                mWorldScene->unloadCell(*iter);
+                mWorldScene->unloadCell(iter);
                 cellController->getCell(iterCell)->uninitializeLocalActors();
                 cellController->getCell(iterCell)->uninitializeDedicatedActors();
 
@@ -3480,7 +3510,7 @@ namespace MWWorld
             // Check mana
             bool godmode = (isPlayer && mGodMode);
             MWMechanics::DynamicStat<float> magicka = stats.getMagicka();
-            if (magicka.getCurrent() < spell->mData.mCost && !godmode)
+            if (spell->mData.mCost > 0 && magicka.getCurrent() < spell->mData.mCost && !godmode)
             {
                 message = "#{sMagicInsufficientSP}";
                 fail = true;
@@ -3666,6 +3696,11 @@ namespace MWWorld
     void World::launchMagicBolt (const std::string &spellId, const MWWorld::Ptr& caster, const osg::Vec3f& fallbackDirection)
     {
         mProjectileManager->launchMagicBolt(spellId, caster, fallbackDirection);
+    }
+
+    void World::updateProjectilesCasters()
+    {
+        mProjectileManager->updateCasters();
     }
 
     class ApplyLoopingParticlesVisitor : public MWMechanics::EffectSourceVisitor
@@ -4361,11 +4396,14 @@ namespace MWWorld
         return false;
     }
 
-    osg::Vec3f World::aimToTarget(const ConstPtr &actor, const MWWorld::ConstPtr& target)
+    osg::Vec3f World::aimToTarget(const ConstPtr &actor, const ConstPtr &target)
     {
         osg::Vec3f weaponPos = actor.getRefData().getPosition().asVec3();
-        weaponPos.z() += mPhysics->getHalfExtents(actor).z();
-        osg::Vec3f targetPos = mPhysics->getCollisionObjectPosition(target);
+        osg::Vec3f weaponHalfExtents = mPhysics->getHalfExtents(actor);
+        osg::Vec3f targetPos = target.getRefData().getPosition().asVec3();
+        osg::Vec3f targetHalfExtents = mPhysics->getHalfExtents(target);
+        weaponPos.z() += weaponHalfExtents.z() * 2 * Constants::TorsoHeight;
+        targetPos.z() += targetHalfExtents.z();
         return (targetPos - weaponPos);
     }
 

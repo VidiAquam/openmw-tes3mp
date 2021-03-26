@@ -10,6 +10,7 @@
 #include "pathfinding.hpp"
 #include "movement.hpp"
 #include "obstacle.hpp"
+#include "aitimer.hpp"
 
 namespace ESM
 {
@@ -27,7 +28,7 @@ namespace MWMechanics
     struct AiCombatStorage : AiTemporaryBase
     {
         float mAttackCooldown;
-        float mTimerReact;
+        AiReactionTimer mReaction;
         float mTimerCombatMove;
         bool mReadyToAttack;
         bool mAttack;
@@ -55,9 +56,11 @@ namespace MWMechanics
         float mFleeBlindRunTimer;
         ESM::Pathgrid::Point mFleeDest;
 
+        bool mUseCustomDestination;
+        osg::Vec3f mCustomDestination;
+
         AiCombatStorage():
         mAttackCooldown(0.0f),
-        mTimerReact(AI_REACTION_TIME),
         mTimerCombatMove(0.0f),
         mReadyToAttack(false),
         mAttack(false),
@@ -74,7 +77,9 @@ namespace MWMechanics
         mFleeState(FleeState_None),
         mLOS(false),
         mUpdateLOSTimer(0.0f),
-        mFleeBlindRunTimer(0.0f)
+        mFleeBlindRunTimer(0.0f),
+        mUseCustomDestination(false),
+        mCustomDestination()
         {}
 
         void startCombatMove(bool isDistantCombat, float distToTarget, float rangeAttack, const MWWorld::Ptr& actor, const MWWorld::Ptr& target);

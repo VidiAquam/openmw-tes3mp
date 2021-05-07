@@ -2,7 +2,6 @@
 
 #include <components/esm/loadcell.hpp>
 #include <components/esm/loadland.hpp>
-#include <components/esm/loadmgef.hpp>
 #include <components/detournavigator/navigator.hpp>
 #include <components/misc/coordinateconverter.hpp>
 #include <components/settings/settings.hpp>
@@ -15,8 +14,6 @@
 #include "../mwworld/cellstore.hpp"
 #include "../mwworld/inventorystore.hpp"
 
-#include "../mwphysics/collisiontype.hpp"
-
 #include "pathgrid.hpp"
 #include "creaturestats.hpp"
 #include "movement.hpp"
@@ -24,6 +21,14 @@
 #include "actorutil.hpp"
 
 #include <osg/Quat>
+
+namespace
+{
+    float divOrMax(float dividend, float divisor)
+    {
+        return divisor == 0 ? std::numeric_limits<float>::max() * std::numeric_limits<float>::epsilon() : dividend / divisor;
+    }
+}
 
 MWMechanics::AiPackage::AiPackage(AiPackageTypeId typeId, const Options& options) :
     mTypeId(typeId),
@@ -411,13 +416,20 @@ bool MWMechanics::AiPackage::isReachableRotatingOnTheRun(const MWWorld::Ptr& act
 
 DetourNavigator::Flags MWMechanics::AiPackage::getNavigatorFlags(const MWWorld::Ptr& actor) const
 {
+    static const bool allowToFollowOverWaterSurface = Settings::Manager::getBool("allow actors to follow over water surface", "Game");
+
     const MWWorld::Class& actorClass = actor.getClass();
     DetourNavigator::Flags result = DetourNavigator::Flag_none;
 
-    if (actorClass.isPureWaterCreature(actor) || (getTypeId() != AiPackageTypeId::Wander && actorClass.canSwim(actor)))
+    if ((actorClass.isPureWaterCreature(actor)
+         || (getTypeId() != AiPackageTypeId::Wander
+             && ((allowToFollowOverWaterSurface && getTypeId() == AiPackageTypeId::Follow)
+                 || actorClass.canSwim(actor)
+                 || hasWaterWalking(actor)))
+        ) && actorClass.getSwimSpeed(actor) > 0)
         result |= DetourNavigator::Flag_swim;
 
-    if (actorClass.canWalk(actor))
+    if (actorClass.canWalk(actor) && actor.getClass().getWalkSpeed(actor) > 0)
         result |= DetourNavigator::Flag_walk;
 
     if (actorClass.isBipedal(actor) && getTypeId() != AiPackageTypeId::Wander)
@@ -433,15 +445,15 @@ DetourNavigator::AreaCosts MWMechanics::AiPackage::getAreaCosts(const MWWorld::P
     const MWWorld::Class& actorClass = actor.getClass();
 
     if (flags & DetourNavigator::Flag_swim)
-        costs.mWater = costs.mWater / actorClass.getSwimSpeed(actor);
+        costs.mWater = divOrMax(costs.mWater, actorClass.getSwimSpeed(actor));
 
     if (flags & DetourNavigator::Flag_walk)
     {
         float walkCost;
         if (getTypeId() == AiPackageTypeId::Wander)
-            walkCost = 1.0 / actorClass.getWalkSpeed(actor);
+            walkCost = divOrMax(1.0, actorClass.getWalkSpeed(actor));
         else
-            walkCost = 1.0 / actorClass.getRunSpeed(actor);
+            walkCost = divOrMax(1.0, actorClass.getRunSpeed(actor));
         costs.mDoor = costs.mDoor * walkCost;
         costs.mPathgrid = costs.mPathgrid * walkCost;
         costs.mGround = costs.mGround * walkCost;

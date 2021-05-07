@@ -15,13 +15,9 @@
 #include <components/sceneutil/unrefqueue.hpp>
 #include <components/esm/loadcell.hpp>
 
-#include "../mwbase/environment.hpp"
-#include "../mwbase/world.hpp"
-
 #include "../mwrender/landmanager.hpp"
 
 #include "cellstore.hpp"
-#include "manualref.hpp"
 #include "class.hpp"
 
 namespace MWWorld
@@ -84,7 +80,7 @@ namespace MWWorld
                     mTerrain->cacheCell(mTerrainView.get(), mX, mY);
                     mPreloadedObjects.insert(mLandManager->getLand(mX, mY));
                 }
-                catch(std::exception& e)
+                catch(std::exception&)
                 {
                 }
             }
@@ -127,7 +123,7 @@ namespace MWWorld
                         mPreloadedObjects.insert(mBulletShapeManager->getShape(mesh));
 
                 }
-                catch (std::exception& e)
+                catch (std::exception&)
                 {
                     // ignore error for now, would spam the log too much
                     // error will be shown when visiting the cell
@@ -448,7 +444,7 @@ namespace MWWorld
     void CellPreloader::abortTerrainPreloadExcept(const CellPreloader::PositionCellGrid *exceptPos)
     {
         const float resetThreshold = ESM::Land::REAL_SIZE;
-        for (auto pos : mTerrainPreloadPositions)
+        for (const auto& pos : mTerrainPreloadPositions)
             if (exceptPos && (pos.first-exceptPos->first).length2() < resetThreshold*resetThreshold && pos.second == exceptPos->second)
                 return;
         if (mTerrainPreloadItem && !mTerrainPreloadItem->isDone())
@@ -461,10 +457,10 @@ namespace MWWorld
 
     bool contains(const std::vector<CellPreloader::PositionCellGrid>& container, const std::vector<CellPreloader::PositionCellGrid>& contained)
     {
-        for (auto pos : contained)
+        for (const auto& pos : contained)
         {
             bool found = false;
-            for (auto pos2 : container)
+            for (const auto& pos2 : container)
             {
                 if ((pos.first-pos2.first).length2() < 1 && pos.second == pos2.second)
                 {

@@ -38,7 +38,6 @@
 #include "containeritemmodel.hpp"
 #include "tradeitemmodel.hpp"
 #include "countdialog.hpp"
-#include "controllers.hpp"
 #include "tooltips.hpp"
 
 namespace

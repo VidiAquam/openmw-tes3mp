@@ -1,5 +1,6 @@
 #include "windowmanagerimp.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <thread>
@@ -199,8 +200,8 @@ namespace MWGui
       , mVersionDescription(versionDescription)
       , mWindowVisible(true)
     {
-        float uiScale = Settings::Manager::getFloat("scaling factor", "GUI");
-        mGuiPlatform = new osgMyGUI::Platform(viewer, guiRoot, resourceSystem->getImageManager(), uiScale);
+        mScalingFactor = std::clamp(Settings::Manager::getFloat("scaling factor", "GUI"), 0.5f, 8.f);
+        mGuiPlatform = new osgMyGUI::Platform(viewer, guiRoot, resourceSystem->getImageManager(), mScalingFactor);
         mGuiPlatform->initialise(resourcePath, (boost::filesystem::path(logpath) / "MyGUI.log").generic_string());
 
         mGui = new MyGUI::Gui;
@@ -211,7 +212,7 @@ namespace MWGui
         MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &WindowManager::onRetrieveTag);
 
         // Load fonts
-        mFontLoader.reset(new Gui::FontLoader(encoding, resourceSystem->getVFS(), userDataPath));
+        mFontLoader.reset(new Gui::FontLoader(encoding, resourceSystem->getVFS(), userDataPath, mScalingFactor));
         mFontLoader->loadBitmapFonts(exportFonts);
 
         //Register own widgets with MyGUI
@@ -1105,8 +1106,9 @@ namespace MWGui
         if(tag.compare(0, MyGuiPrefixLength, MyGuiPrefix) == 0)
         {
             tag = tag.substr(MyGuiPrefixLength, tag.length());
-            std::string settingSection = tag.substr(0, tag.find(","));
-            std::string settingTag = tag.substr(tag.find(",")+1, tag.length());
+            size_t comma_pos = tag.find(',');
+            std::string settingSection = tag.substr(0, comma_pos);
+            std::string settingTag = tag.substr(comma_pos+1, tag.length());
             
             _result = Settings::Manager::getString(settingTag, settingSection);            
         }
@@ -1413,6 +1415,11 @@ namespace MWGui
     bool WindowManager::getWorldMouseOver()
     {
         return mHud->getWorldMouseOver();
+    }
+
+    float WindowManager::getScalingFactor()
+    {
+        return mScalingFactor;
     }
 
     void WindowManager::executeInConsole (const std::string& path)

@@ -8,7 +8,6 @@
 #include "../mwbase/world.hpp"
 
 #include "../mwworld/class.hpp"
-#include "../mwworld/action.hpp"
 
 /*
     Start of tes3mp addition

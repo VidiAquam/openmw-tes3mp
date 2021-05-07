@@ -136,7 +136,7 @@ namespace Crash
 
         memset(mShm->mStartup.mLogFilePath, 0, sizeof(mShm->mStartup.mLogFilePath));
         int length = crashLogPath.length();
-        if (length > MAX_LONG_PATH) length = MAX_LONG_PATH;
+        if (length >= MAX_LONG_PATH) length = MAX_LONG_PATH - 1;
         strncpy(mShm->mStartup.mLogFilePath, crashLogPath.c_str(), length);
         mShm->mStartup.mLogFilePath[length] = '\0';
 
@@ -178,8 +178,6 @@ namespace Crash
         sInstance->handleVectoredException(info);
 
         _Exit(1);
-
-        return EXCEPTION_CONTINUE_SEARCH;
     }
 
     void CrashCatcher::handleVectoredException(PEXCEPTION_POINTERS info)

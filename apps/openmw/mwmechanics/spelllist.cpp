@@ -3,7 +3,6 @@
 #include <algorithm>
 
 #include <components/esm/loadspel.hpp>
-#include <components/misc/rng.hpp>
 
 #include "spells.hpp"
 
@@ -153,23 +152,23 @@ namespace MWMechanics
 
     void SpellList::addListener(Spells* spells)
     {
-        for(const auto ptr : mListeners)
-        {
-            if(ptr == spells)
-                return;
-        }
+        if (std::find(mListeners.begin(), mListeners.end(), spells) != mListeners.end())
+            return;
         mListeners.push_back(spells);
     }
 
     void SpellList::removeListener(Spells* spells)
     {
-        for(auto it = mListeners.begin(); it != mListeners.end(); it++)
-        {
-            if(*it == spells)
-            {
-                mListeners.erase(it);
-                break;
-            }
-        }
+        const auto it = std::find(mListeners.begin(), mListeners.end(), spells);
+        if (it != mListeners.end())
+            mListeners.erase(it);
+    }
+
+    void SpellList::updateListener(Spells* before, Spells* after)
+    {
+        const auto it = std::find(mListeners.begin(), mListeners.end(), before);
+        if (it == mListeners.end())
+            return mListeners.push_back(after);
+        *it = after;
     }
 }

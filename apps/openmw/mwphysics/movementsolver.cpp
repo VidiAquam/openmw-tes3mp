@@ -131,7 +131,7 @@ namespace MWPhysics
         // Reset per-frame data
         physicActor->setWalkingOnWater(false);
         // Anything to collide with?
-        if(!physicActor->getCollisionMode())
+        if(!physicActor->getCollisionMode() || actor.mSkipCollisionDetection)
         {
             actor.mPosition += (osg::Quat(refpos.rot[0], osg::Vec3f(-1, 0, 0)) *
                                 osg::Quat(refpos.rot[2], osg::Vec3f(0, 0, -1))
@@ -437,7 +437,7 @@ namespace MWPhysics
             return;
 
         auto* physicActor = actor.mActorRaw;
-        if(!physicActor->getCollisionMode()) // noclipping/tcl
+        if(!physicActor->getCollisionMode() || actor.mSkipCollisionDetection) // noclipping/tcl
             return;
 
         auto* collisionObject = physicActor->getCollisionObject();
@@ -459,8 +459,7 @@ namespace MWPhysics
         const auto verticalHalfExtent = osg::Vec3f(0.0, 0.0, physicActor->getHalfExtents().z());
 
         // use a 3d approximation of the movement vector to better judge player intent
-        const ESM::Position& refpos = ptr.getRefData().getPosition();
-        auto velocity = (osg::Quat(refpos.rot[0], osg::Vec3f(-1, 0, 0)) * osg::Quat(refpos.rot[2], osg::Vec3f(0, 0, -1))) * actor.mMovement;
+        auto velocity = (osg::Quat(actor.mRefpos.rot[0], osg::Vec3f(-1, 0, 0)) * osg::Quat(actor.mRefpos.rot[2], osg::Vec3f(0, 0, -1))) * actor.mMovement;
         // try to pop outside of the world before doing anything else if we're inside of it
         if (!physicActor->getOnGround() || physicActor->getOnSlope())
                 velocity += physicActor->getInertialForce();

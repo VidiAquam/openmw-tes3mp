@@ -5,8 +5,6 @@
 
 #include <components/compiler/locals.hpp>
 
-#include <components/esm/cellid.hpp>
-
 /*
     Start of tes3mp addition
 

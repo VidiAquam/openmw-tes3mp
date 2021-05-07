@@ -32,7 +32,6 @@ namespace MyGUI
 
 namespace ESM
 {
-    struct Class;
     class ESMReader;
     class ESMWriter;
     struct CellId;
@@ -227,6 +226,8 @@ namespace MWBase
             */
 
             virtual bool getWorldMouseOver() = 0;
+
+            virtual float getScalingFactor() = 0;
 
             virtual bool toggleFogOfWar() = 0;
 

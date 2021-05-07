@@ -12,8 +12,6 @@
 #include "../mwbase/world.hpp"
 #include "../mwbase/scriptmanager.hpp"
 
-#include "../mwmechanics/creaturestats.hpp"
-
 #include "interpretercontext.hpp"
 
 namespace
@@ -250,12 +248,19 @@ namespace MWScript
         }
     }
 
-    bool GlobalScripts::readRecord (ESM::ESMReader& reader, uint32_t type)
+    bool GlobalScripts::readRecord (ESM::ESMReader& reader, uint32_t type, const std::map<int, int>& contentFileMap)
     {
         if (type==ESM::REC_GSCR)
         {
             ESM::GlobalScript script;
             script.load (reader);
+
+            if (script.mTargetRef.hasContentFile())
+            {
+                auto iter = contentFileMap.find(script.mTargetRef.mContentFile);
+                if (iter != contentFileMap.end())
+                    script.mTargetRef.mContentFile = iter->second;
+            }
 
             auto iter = mScripts.find (script.mId);
 

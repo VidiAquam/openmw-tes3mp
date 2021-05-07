@@ -1,5 +1,9 @@
 #version 120
 
+#if @useUBO
+    #extension GL_ARB_uniform_buffer_object : require
+#endif
+
 #if @useGPUShader4
     #extension GL_EXT_gpu_shader4: require
 #endif
@@ -52,8 +56,6 @@ void main()
 
 #if @normalMap
     vec4 normalTex = texture2D(normalMap, normalMapUV);
-    // Must flip Y for DirectX format normal maps
-    normalTex.y = 1.0 - normalTex.y;
 
     vec3 normalizedNormal = normalize(passNormal);
     vec3 normalizedTangent = normalize(passTangent.xyz);
@@ -74,11 +76,7 @@ void main()
 #endif
     vec3 lighting = diffuseColor.xyz * diffuseLight + getAmbientColor().xyz * ambientLight + emission;
 
-#if @clamp
-    lighting = clamp(lighting, vec3(0.0), vec3(1.0));
-#else
-    lighting = max(lighting, 0.0);
-#endif
+    clampLightingResult(lighting);
 
     gl_FragData[0].xyz *= lighting;
 

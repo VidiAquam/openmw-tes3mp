@@ -109,7 +109,7 @@ namespace MWScript
                     runtime.pop();
 
                     if (count<0)
-                        throw std::runtime_error ("second argument for AddItem must be non-negative");
+                        count = static_cast<uint16_t>(count);
 
                     // no-op
                     if (count == 0)

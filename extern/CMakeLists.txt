@@ -28,16 +28,20 @@ if(NOT OPENMW_USE_SYSTEM_BULLET)
     set(BUILD_CPU_DEMOS OFF CACHE BOOL "")
     set(BUILD_EGL OFF CACHE BOOL "")
 
-    set(USE_DOUBLE_PRECISION ${BULLET_USE_DOUBLES} CACHE BOOL "")
+    set(USE_DOUBLE_PRECISION ON CACHE BOOL "")
     set(BULLET2_MULTITHREADING ON CACHE BOOL "")
 
     if(BULLET_STATIC)
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
     else()
         set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-        if(MSVC)
-            set(USE_MSVC_RUNTIME_LIBRARY_DLL ON CACHE BOOL "" FORCE)
-        endif()
+    endif()
+
+    if(MSVC)
+        # this setting is badly named - having it off forces the static runtime library,
+        # but having it on does nothing, letting the defaults get used.
+        # OpenMW uses the defaults, and you can't mix and match.
+        set(USE_MSVC_RUNTIME_LIBRARY_DLL ON CACHE BOOL "" FORCE)
     endif()
 
     # master on 12 Mar 2021

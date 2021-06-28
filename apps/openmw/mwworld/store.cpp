@@ -58,10 +58,7 @@ namespace MWWorld
 
         record.load(esm, isDeleted);
 
-        // Try to overwrite existing record
-        std::pair<typename Static::iterator, bool> ret = mStatic.insert(std::make_pair(record.mIndex, record));
-        if (!ret.second)
-            ret.first->second = record;
+        mStatic.insert_or_assign(record.mIndex, record);
     }
     template<typename T>
     int IndexedStore<T>::getSize() const
@@ -181,11 +178,9 @@ namespace MWWorld
         record.load(esm, isDeleted);
         Misc::StringUtils::lowerCaseInPlace(record.mId);
 
-        std::pair<typename Static::iterator, bool> inserted = mStatic.insert(std::make_pair(record.mId, record));
+        std::pair<typename Static::iterator, bool> inserted = mStatic.insert_or_assign(record.mId, record);
         if (inserted.second)
             mShared.push_back(&inserted.first->second);
-        else
-            inserted.first->second = record;
 
         return RecordId(record.mId, isDeleted);
     }
@@ -235,28 +230,20 @@ namespace MWWorld
             if(it == mStatic.end())
                 return nullptr;
         }
-        std::pair<typename Dynamic::iterator, bool> result =
-            mDynamic.insert(std::pair<std::string, T>(id, item));
+        std::pair<typename Dynamic::iterator, bool> result = mDynamic.insert_or_assign(id, item);
         T *ptr = &result.first->second;
-        if (result.second) {
+        if (result.second)
             mShared.push_back(ptr);
-        } else {
-            *ptr = item;
-        }
         return ptr;
     }
     template<typename T>
     T *Store<T>::insertStatic(const T &item)
     {
         std::string id = Misc::StringUtils::lowerCase(item.mId);
-        std::pair<typename Static::iterator, bool> result =
-            mStatic.insert(std::pair<std::string, T>(id, item));
+        std::pair<typename Static::iterator, bool> result = mStatic.insert_or_assign(id, item);
         T *ptr = &result.first->second;
-        if (result.second) {
+        if (result.second)
             mShared.push_back(ptr);
-        } else {
-            *ptr = item;
-        }
         return ptr;
     }
     template<typename T>
@@ -531,9 +518,9 @@ namespace MWWorld
             // But there may be duplicates here!
             ESM::CellRefTracker::iterator iter = std::find_if(cellAlt->mLeasedRefs.begin(), cellAlt->mLeasedRefs.end(), ESM::CellRefTrackerPredicate(ref.mRefNum));
             if (iter == cellAlt->mLeasedRefs.end())
-                cellAlt->mLeasedRefs.push_back(std::make_pair(ref, deleted));
+                cellAlt->mLeasedRefs.emplace_back(std::move(ref), deleted);
             else
-                *iter = std::make_pair(ref, deleted);
+                *iter = std::make_pair(std::move(ref), deleted);
         }
     }
     const ESM::Cell *Store<ESM::Cell>::search(const std::string &id) const
@@ -634,20 +621,15 @@ namespace MWWorld
 
     void Store<ESM::Cell>::setUp()
     {
-        typedef DynamicExt::iterator ExtIterator;
-        typedef std::map<std::string, ESM::Cell>::iterator IntIterator;
-
         mSharedInt.clear();
         mSharedInt.reserve(mInt.size());
-        for (IntIterator it = mInt.begin(); it != mInt.end(); ++it) {
-            mSharedInt.push_back(&(it->second));
-        }
+        for (auto & [_, cell] : mInt)
+            mSharedInt.push_back(&cell);
 
         mSharedExt.clear();
         mSharedExt.reserve(mExt.size());
-        for (ExtIterator it = mExt.begin(); it != mExt.end(); ++it) {
-            mSharedExt.push_back(&(it->second));
-        }
+        for (auto & [_, cell] : mExt)
+            mSharedExt.push_back(&cell);
     }
     RecordId Store<ESM::Cell>::load(ESM::ESMReader &esm)
     {
@@ -949,7 +931,7 @@ namespace MWWorld
         // mX and mY will be (0,0) for interior cells, but there is also an exterior cell with the coordinates of (0,0), so that doesn't help.
         // Check whether mCell is an interior cell. This isn't perfect, will break if a Region with the same name as an interior cell is created.
         // A proper fix should be made for future versions of the file format.
-        bool interior = mCells->search(pathgrid.mCell) != nullptr;
+        bool interior = pathgrid.mData.mX == 0 && pathgrid.mData.mY == 0 && mCells->search(pathgrid.mCell) != nullptr;
 
         // Try to overwrite existing record
         if (interior)
@@ -1052,7 +1034,7 @@ namespace MWWorld
         if (index >= mStatic.size()) {
             return nullptr;
         }
-        return &mStatic.at(index);
+        return &mStatic[index];
     }
 
     const ESM::Attribute *Store<ESM::Attribute>::find(size_t index) const
@@ -1099,18 +1081,13 @@ namespace MWWorld
     {
         // DialInfos marked as deleted are kept during the loading phase, so that the linked list
         // structure is kept intact for inserting further INFOs. Delete them now that loading is done.
-        for (Static::iterator it = mStatic.begin(); it != mStatic.end(); ++it)
-        {
-            ESM::Dialogue& dial = it->second;
+        for (auto & [_, dial] : mStatic)
             dial.clearDeletedInfos();
-        }
 
         mShared.clear();
         mShared.reserve(mStatic.size());
-        std::map<std::string, ESM::Dialogue>::iterator it = mStatic.begin();
-        for (; it != mStatic.end(); ++it) {
-            mShared.push_back(&(it->second));
-        }
+        for (auto & [_, dial] : mStatic)
+            mShared.push_back(&dial);
     }
 
     template <>
@@ -1131,7 +1108,7 @@ namespace MWWorld
         else
         {
             found->second.loadData(esm, isDeleted);
-            dialogue = found->second;
+            dialogue.mId = found->second.mId;
         }
 
         return RecordId(dialogue.mId, isDeleted);

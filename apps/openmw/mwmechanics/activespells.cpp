@@ -164,7 +164,7 @@ namespace MWMechanics
         return mSpells;
     }
 
-    void ActiveSpells::addSpell(const std::string &id, bool stack, std::vector<ActiveEffect> effects,
+    void ActiveSpells::addSpell(const std::string &id, bool stack, const std::vector<ActiveEffect>& effects,
                                 const std::string &displayName, int casterActorId)
     {
         TContainer::iterator it(mSpells.find(id));

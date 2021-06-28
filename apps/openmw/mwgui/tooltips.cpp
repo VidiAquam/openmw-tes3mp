@@ -251,7 +251,7 @@ namespace MWGui
                     }
                     std::string cost = focus->getUserString("SpellCost");
                     if (cost != "" && cost != "0")
-                        info.text += MWGui::ToolTips::getValueString(spell->mData.mCost, "#{sCastCost}");
+                        info.text += MWGui::ToolTips::getValueString(MWMechanics::calcSpellCost(*spell), "#{sCastCost}");
                     info.effects = effects;
                     tooltipSize = createToolTip(info);
                 }
@@ -266,7 +266,7 @@ namespace MWGui
                     std::map<std::string, std::string> userStrings = focus->getUserStrings();
                     for (auto& userStringPair : userStrings)
                     {
-                        size_t underscorePos = userStringPair.first.find("_");
+                        size_t underscorePos = userStringPair.first.find('_');
                         if (underscorePos == std::string::npos)
                             continue;
                         std::string key = userStringPair.first.substr(0, underscorePos);

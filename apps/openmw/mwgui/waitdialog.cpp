@@ -34,8 +34,6 @@
 #include "../mwmechanics/npcstats.hpp"
 #include "../mwmechanics/actorutil.hpp"
 
-#include "../mwstate/charactermanager.hpp"
-
 namespace MWGui
 {
 

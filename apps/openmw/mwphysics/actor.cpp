@@ -35,7 +35,7 @@ namespace MWPhysics
 Actor::Actor(const MWWorld::Ptr& ptr, const Resource::BulletShape* shape, PhysicsTaskScheduler* scheduler)
   : mStandingOnPtr(nullptr), mCanWaterWalk(false), mWalkingOnWater(false)
   , mCollisionObject(nullptr), mMeshTranslation(shape->mCollisionBox.center), mHalfExtents(shape->mCollisionBox.extents)
-  , mStuckFrames(0), mLastStuckPosition{0, 0, 0}
+  , mVelocity(0,0,0), mStuckFrames(0), mLastStuckPosition{0, 0, 0}
   , mForce(0.f, 0.f, 0.f), mOnGround(true), mOnSlope(false)
   , mInternalCollisionMode(true)
   , mExternalCollisionMode(true)
@@ -152,25 +152,13 @@ int Actor::getCollisionMask() const
 void Actor::updatePosition()
 {
     std::scoped_lock lock(mPositionMutex);
-    updateWorldPosition();
-    mPreviousPosition = mWorldPosition;
-    mPosition = mWorldPosition;
-    mSimulationPosition = mWorldPosition;
+    const auto worldPosition = mPtr.getRefData().getPosition().asVec3();
+    mPreviousPosition = worldPosition;
+    mPosition = worldPosition;
+    mSimulationPosition = worldPosition;
     mPositionOffset = osg::Vec3f();
     mStandingOnPtr = nullptr;
     mSkipCollisions = true;
-}
-
-void Actor::updateWorldPosition()
-{
-    if (mWorldPosition != mPtr.getRefData().getPosition().asVec3())
-        mWorldPositionChanged = true;
-    mWorldPosition = mPtr.getRefData().getPosition().asVec3();
-}
-
-osg::Vec3f Actor::getWorldPosition() const
-{
-    return mWorldPosition;
 }
 
 void Actor::setSimulationPosition(const osg::Vec3f& position)
@@ -209,7 +197,6 @@ osg::Vec3f Actor::getCollisionObjectPosition() const
 bool Actor::setPosition(const osg::Vec3f& position)
 {
     std::scoped_lock lock(mPositionMutex);
-    updateWorldPosition();
     applyOffsetChange();
     bool hasChanged = mPosition != position || mWorldPositionChanged;
     mPreviousPosition = mPosition;
@@ -336,6 +323,16 @@ void Actor::setStandingOnPtr(const MWWorld::Ptr& ptr)
 bool Actor::skipCollisions()
 {
     return std::exchange(mSkipCollisions, false);
+}
+
+void Actor::setVelocity(osg::Vec3f velocity)
+{
+    mVelocity = velocity;
+}
+
+osg::Vec3f Actor::velocity()
+{
+    return std::exchange(mVelocity, osg::Vec3f());
 }
 
 }

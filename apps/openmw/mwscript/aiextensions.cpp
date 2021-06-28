@@ -303,8 +303,11 @@ namespace MWScript
                         End of tes3mp addition
                     */
 
-                    ptr.getClass().getCreatureStats(ptr).setAiSetting(mIndex, value);
-                    ptr.getClass().setBaseAISetting(ptr.getCellRef().getRefId(), mIndex, value);
+                    if(ptr.getClass().isActor())
+                    {
+                        ptr.getClass().getCreatureStats(ptr).setAiSetting(mIndex, value);
+                        ptr.getClass().setBaseAISetting(ptr.getCellRef().getRefId(), mIndex, value);
+                    }
 
                     /*
                         Start of tes3mp addition

@@ -255,6 +255,7 @@ add_component_dir(detournavigator
     raycast
     navmeshtileview
     oscillatingrecastmeshobject
+    offmeshconnectionsmanager
     )
 
 set (ESM_UI ${CMAKE_SOURCE_DIR}/files/ui/contentselector.ui
@@ -326,6 +327,8 @@ target_link_libraries(components
     RecastNavigation::DebugUtils
     RecastNavigation::Detour
     RecastNavigation::Recast
+
+    Base64
     )
 
 target_link_libraries(components ${BULLET_LIBRARIES})

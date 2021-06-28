@@ -1,6 +1,5 @@
 #include "makenavmesh.hpp"
 #include "debug.hpp"
-#include "dtstatus.hpp"
 #include "exceptions.hpp"
 #include "recastmesh.hpp"
 #include "settings.hpp"
@@ -390,7 +389,7 @@ namespace
 
         const auto offMeshConVerts = getOffMeshVerts(offMeshConnections);
         const std::vector<float> offMeshConRad(offMeshConnections.size(), getRadius(settings, agentHalfExtents));
-        const std::vector<unsigned char> offMeshConDir(offMeshConnections.size(), DT_OFFMESH_CON_BIDIR);
+        const std::vector<unsigned char> offMeshConDir(offMeshConnections.size(), 0);
         const std::vector<unsigned char> offMeshConAreas = getOffMeshConAreas(offMeshConnections);
         const std::vector<unsigned short> offMeshConFlags = getOffMeshFlags(offMeshConnections);
 

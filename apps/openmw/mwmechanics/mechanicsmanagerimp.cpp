@@ -265,7 +265,7 @@ namespace MWMechanics
             mObjects.addObject(ptr);
     }
 
-    void MechanicsManager::castSpell(const MWWorld::Ptr& ptr, const std::string spellId, bool manualSpell)
+    void MechanicsManager::castSpell(const MWWorld::Ptr& ptr, const std::string& spellId, bool manualSpell)
     {
         if(ptr.getClass().isActor())
             mActors.castSpell(ptr, spellId, manualSpell);
@@ -416,7 +416,7 @@ namespace MWMechanics
         mActors.rest(hours, sleep);
     }
 
-    void MechanicsManager::restoreDynamicStats(MWWorld::Ptr actor, double hours, bool sleep)
+    void MechanicsManager::restoreDynamicStats(const MWWorld::Ptr& actor, double hours, bool sleep)
     {
         mActors.restoreDynamicStats(actor, hours, sleep);
     }
@@ -932,7 +932,7 @@ namespace MWMechanics
         int lockLevel = cellref.getLockLevel();
         if (target.getClass().isDoor() &&
             (lockLevel <= 0 || lockLevel == ESM::UnbreakableLock) &&
-            ptr.getCellRef().getTrap().empty())
+            cellref.getTrap().empty())
         {
             return true;
         }

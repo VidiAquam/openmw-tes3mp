@@ -19,11 +19,18 @@ void Manager::clear()
     mChangedSettings.clear();
 }
 
-void Manager::loadDefault(const std::string &file)
+/*
+    Start of tes3mp addition
+    Make it possible to load plain text settings file
+*/
+void Manager::loadDefault(const std::string &file, bool base64encoded)
 {
     SettingsFileParser parser;
-    parser.loadSettingsFile(file, mDefaultSettings, true);
+    parser.loadSettingsFile(file, mDefaultSettings, base64encoded);
 }
+/*
+    End of tes3mp addition
+*/
 
 void Manager::loadUser(const std::string &file)
 {

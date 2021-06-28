@@ -13,9 +13,9 @@ std::string loadSettings (Settings::Manager & settings)
 
     // prefer local
     if (boost::filesystem::exists(localdefault))
-        settings.loadDefault(localdefault);
+        settings.loadDefault(localdefault, false);
     else if (boost::filesystem::exists(globaldefault))
-        settings.loadDefault(globaldefault);
+        settings.loadDefault(globaldefault, false);
     else
         throw std::runtime_error ("No default settings file found! Make sure the file \"tes3mp-client-default.cfg\" was properly installed.");
 

@@ -169,6 +169,16 @@ namespace MWWorld
 
             void testExteriorCells();
             void testInteriorCells();
+
+            /*
+                Start of tes3mp addition
+            */
+            void unloadCell (CellStore *cell, bool test = false);
+
+            void loadCell (CellStore *cell, Loading::Listener* loadingListener, bool respawn, bool test = false);
+            /*
+                End of tes3mp addition
+            */
     };
 }
 

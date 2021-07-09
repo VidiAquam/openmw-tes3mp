@@ -2949,7 +2949,7 @@ namespace MWWorld
         {
             const Scene::CellStoreCollection& activeCells = mWorldScene->getActiveCells();
             mwmp::CellController *cellController = mwmp::Main::get().getCellController();
-            mWorldScene->unloadCell(activeCells.find(cellController->getCellStore(cell)));
+            mWorldScene->unloadCell(*(activeCells.find(cellController->getCellStore(cell))));
         }
     }
     /*
@@ -3016,7 +3016,7 @@ namespace MWWorld
                 ESM::Cell iterCell = *(*iter)->getCell();
                 MWWorld::CellStore * cellStore = cellController->getCellStore(iterCell);
                 
-                mWorldScene->unloadCell(iter);
+                mWorldScene->unloadCell(*iter);
                 cellController->getCell(iterCell)->uninitializeLocalActors();
                 cellController->getCell(iterCell)->uninitializeDedicatedActors();
 

@@ -1371,4 +1371,20 @@ namespace MWWorld
             }
         }
     }
+
+    /*
+        Start of tes3mp addition
+    */
+    void Scene::unloadCell (CellStore *cell, bool test) {
+        deactivateCell(cell);
+        unloadInactiveCell(cell);
+    }
+
+    void Scene::loadCell (CellStore *cell, Loading::Listener* loadingListener, bool respawn, bool test) {
+        loadInactiveCell (cell, loadingListener);
+        activateCell (cell, loadingListener, respawn);
+    }
+    /*
+        End of tes3mp addition
+    */
 }

@@ -56,12 +56,15 @@ namespace MWGui
 
             void onButtonPressed(int button) { eventButtonPressed(button); eventButtonPressed.clear(); }
 
+            void setVisible(bool value);
+
         private:
             std::vector<MessageBox*> mMessageBoxes;
             InteractiveMessageBox* mInterMessageBoxe;
             MessageBox* mStaticMessageBox;
             float mMessageBoxSpeed;
             int mLastButtonPressed;
+            bool mVisible = true;
     };
 
     class MessageBox : public Layout
@@ -71,6 +74,7 @@ namespace MWGui
             void setMessage (const std::string& message);
             int getHeight ();
             void update (int height);
+            void setVisible(bool value);
 
             float mCurrentTime;
             float mMaxTime;

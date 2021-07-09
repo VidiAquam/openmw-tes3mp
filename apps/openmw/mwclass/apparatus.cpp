@@ -38,7 +38,7 @@ namespace MWClass
         }
     }
 
-    void Apparatus::insertObject(const MWWorld::Ptr& ptr, const std::string& model, MWPhysics::PhysicsSystem& physics) const
+    void Apparatus::insertObject(const MWWorld::Ptr& ptr, const std::string& model, osg::Quat rotation, MWPhysics::PhysicsSystem& physics, bool skipAnimated) const
     {
         // TODO: add option somewhere to enable collision for placeable objects
 
@@ -54,9 +54,9 @@ namespace MWClass
             if (worldstate->hasPlacedObjectCollision || Utils::vectorContains(worldstate->enforcedCollisionRefIds, ptr.getCellRef().getRefId()))
             {
                 if (worldstate->useActorCollisionForPlacedObjects)
-                    physics.addObject(ptr, model, MWPhysics::CollisionType_Actor);
+                    physics.addObject(ptr, model, rotation, MWPhysics::CollisionType_Actor, skipAnimated);
                 else
-                    physics.addObject(ptr, model,  MWPhysics::CollisionType_World);
+                    physics.addObject(ptr, model, rotation, MWPhysics::CollisionType_World, skipAnimated);
             }
         }
         /*

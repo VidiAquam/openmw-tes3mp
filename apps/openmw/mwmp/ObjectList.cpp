@@ -668,6 +668,8 @@ void ObjectList::setObjectStates(MWWorld::CellStore* cellStore)
 
             if (baseObject.objectState)
             {
+                if(!ptrFound.isEmpty() && !ptrFound.mRef->mData.isEnabled())
+                    ptrFound.mRef->mData.mPhysicsPostponed = false;
                 MWBase::Environment::get().getWorld()->enable(ptrFound);
 
                 // Is this an actor in a cell where we're the authority? If so, initialize it as

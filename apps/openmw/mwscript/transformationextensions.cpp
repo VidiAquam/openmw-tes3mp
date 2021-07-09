@@ -59,9 +59,18 @@ namespace MWScript
 
                 void execute (Interpreter::Runtime& runtime) override
                 {
-                    MWWorld::Ptr from = R()(runtime);
+                    MWWorld::Ptr from = R()(runtime, !R::implicit);
                     std::string name = runtime.getStringLiteral (runtime[0].mInteger);
                     runtime.pop();
+
+                    if (from.isEmpty())
+                    {
+                        std::string error = "Missing implicit ref";
+                        runtime.getContext().report(error);
+                        Log(Debug::Error) << error;
+                        runtime.push(0.f);
+                        return;
+                    }
 
                     if (from.getContainerStore()) // is the object contained?
                     {
@@ -561,6 +570,7 @@ namespace MWScript
                         pos.rot[0] = pos.rot[1] = 0;
                         pos.rot[2] = osg::DegreesToRadians(zRotDegrees);
                         MWWorld::ManualRef ref(MWBase::Environment::get().getWorld()->getStore(),itemID);
+                        ref.getPtr().mRef->mData.mPhysicsPostponed = !ref.getPtr().getClass().isActor();
                         ref.getPtr().getCellRef().setPosition(pos);
                         MWWorld::Ptr placed = MWBase::Environment::get().getWorld()->placeObject(ref.getPtr(),store,pos);
                         placed.getClass().adjustPosition(placed, true);
@@ -647,6 +657,7 @@ namespace MWScript
                     pos.rot[0] = pos.rot[1] = 0;
                     pos.rot[2] = osg::DegreesToRadians(zRotDegrees);
                     MWWorld::ManualRef ref(MWBase::Environment::get().getWorld()->getStore(),itemID);
+                    ref.getPtr().mRef->mData.mPhysicsPostponed = !ref.getPtr().getClass().isActor();
                     ref.getPtr().getCellRef().setPosition(pos);
                     MWWorld::Ptr placed = MWBase::Environment::get().getWorld()->placeObject(ref.getPtr(),store,pos);
                     placed.getClass().adjustPosition(placed, true);
@@ -726,6 +737,7 @@ namespace MWScript
                     {
                         // create item
                         MWWorld::ManualRef ref(MWBase::Environment::get().getWorld()->getStore(), itemID, 1);
+                        ref.getPtr().mRef->mData.mPhysicsPostponed = !ref.getPtr().getClass().isActor();
 
                         MWWorld::Ptr ptr = MWBase::Environment::get().getWorld()->safePlaceObject(ref.getPtr(), actor, actor.getCell(), direction, distance);
                         MWBase::Environment::get().getWorld()->scaleObject(ptr, actor.getCellRef().getScale());

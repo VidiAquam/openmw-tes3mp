@@ -17,6 +17,7 @@
     End of tes3mp addition
 */
 
+#include <components/compiler/extensions.hpp>
 #include <components/compiler/opcodes.hpp>
 #include <components/compiler/locals.hpp>
 
@@ -225,7 +226,9 @@ namespace MWScript
                         Disable unilateral state enabling on this client and expect the server's reply to our
                         packet to do it instead
                     */
-                    //MWBase::Environment::get().getWorld()->enable (ptr);
+                    // if(!ptr.isEmpty() && !ptr.mRef->mData.isEnabled())
+                    //     ptr.mRef->mData.mPhysicsPostponed = false;
+                    // MWBase::Environment::get().getWorld()->enable (ptr);
                     /*
                         End of tes3mp change (major)
                     */
@@ -1786,6 +1789,22 @@ namespace MWScript
                 }
         };
 
+        class OpHelp : public Interpreter::Opcode0
+        {
+            public:
+
+                void execute(Interpreter::Runtime& runtime) override
+                {
+                    std::stringstream message;
+                    message << MWBase::Environment::get().getWindowManager()->getVersionDescription() << "\n\n";
+                    std::vector<std::string> commands;
+                    MWBase::Environment::get().getScriptManager()->getExtensions().listKeywords(commands);
+                    for(const auto& command : commands)
+                        message << command << "\n";
+                    runtime.getContext().report(message.str());
+                }
+        };
+
         void installOpcodes (Interpreter::Interpreter& interpreter)
         {
             interpreter.installSegment5 (Compiler::Misc::opcodeMenuMode, new OpMenuMode);
@@ -1905,6 +1924,7 @@ namespace MWScript
             interpreter.installSegment5 (Compiler::Misc::opcodeRepairedOnMe, new OpRepairedOnMe<ImplicitRef>);
             interpreter.installSegment5 (Compiler::Misc::opcodeRepairedOnMeExplicit, new OpRepairedOnMe<ExplicitRef>);
             interpreter.installSegment5 (Compiler::Misc::opcodeToggleRecastMesh, new OpToggleRecastMesh);
+            interpreter.installSegment5 (Compiler::Misc::opcodeHelp, new OpHelp);
         }
     }
 }

@@ -8,6 +8,7 @@
 **/
 
 #include <stack>
+#include <vector>
 
 #include <osg/ref_ptr>
 
@@ -16,6 +17,7 @@
 #include <components/sdlutil/events.hpp>
 #include <components/settings/settings.hpp>
 #include <components/to_utf8/to_utf8.hpp>
+#include <components/misc/guarded.hpp>
 
 #include "mapwindow.hpp"
 #include "statswatcher.hpp"
@@ -264,7 +266,7 @@ namespace MWGui
 
     bool getWorldMouseOver() override;
 
-    float getScalingFactor() override;
+    float getScalingFactor() const override;
 
     bool toggleFogOfWar() override;
     bool toggleFullHelp() override; ///< show extra info in item tooltips (owner, script)
@@ -330,6 +332,7 @@ namespace MWGui
     void exitCurrentGuiMode() override;
 
     void messageBox (const std::string& message, enum MWGui::ShowInDialogueMode showInDialogueMode = MWGui::ShowInDialogueMode_IfPossible) override;
+    void scheduleMessageBox (std::string message, enum MWGui::ShowInDialogueMode showInDialogueMode = MWGui::ShowInDialogueMode_IfPossible) override;
     void staticMessageBox(const std::string& message) override;
     void removeStaticMessageBox() override;
     /*
@@ -467,6 +470,8 @@ namespace MWGui
 
     bool injectKeyPress(MyGUI::KeyCode key, unsigned int text, bool repeat=false) override;
     bool injectKeyRelease(MyGUI::KeyCode key) override;
+
+    const std::string& getVersionDescription() const override;
 
   private:
     unsigned int mOldUpdateMask; unsigned int mOldCullMask;
@@ -618,6 +623,17 @@ namespace MWGui
 
     float mScalingFactor;
 
+    struct ScheduledMessageBox
+    {
+        std::string mMessage;
+        MWGui::ShowInDialogueMode mShowInDialogueMode;
+
+        ScheduledMessageBox(std::string&& message, MWGui::ShowInDialogueMode showInDialogueMode)
+            : mMessage(std::move(message)), mShowInDialogueMode(showInDialogueMode) {}
+    };
+
+    Misc::ScopeGuarded<std::vector<ScheduledMessageBox>> mScheduledMessageBoxes;
+
     /**
      * Called when MyGUI tries to retrieve a tag's value. Tags must be denoted in #{tag} notation and will be replaced upon setting a user visible text/property.
      * Supported syntax:
@@ -649,6 +665,8 @@ namespace MWGui
     void updatePinnedWindows();
 
     void enableScene(bool enable);
+
+    void handleScheduledMessageBoxes();
   };
 }
 

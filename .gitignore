@@ -85,3 +85,4 @@ moc_*.cxx
 *.[ao]
 *.so
 venv/
+/CMakeSettings.json

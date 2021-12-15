@@ -41,6 +41,7 @@ namespace mwmp
         void setEquipment();
         void setShapeshift();
         void setCell();
+        void setModel();
 
         void playAnimation();
         void playSpeech();

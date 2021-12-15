@@ -194,7 +194,7 @@ add_component_dir (openmw-mp/Packets/Player
         PacketPlayerAttack PacketPlayerAttribute PacketPlayerBehavior PacketPlayerBook PacketPlayerBounty
         PacketPlayerCast PacketPlayerCellChange PacketPlayerCellState PacketPlayerClass PacketPlayerDeath
         PacketPlayerEquipment PacketPlayerFaction PacketPlayerInput PacketPlayerInventory PacketPlayerItemUse
-        PacketPlayerJail PacketPlayerJournal PacketPlayerLevel PacketPlayerMiscellaneous PacketPlayerMomentum
+        PacketPlayerJail PacketPlayerJournal PacketPlayerLevel PacketPlayerMiscellaneous PacketPlayerModel PacketPlayerMomentum
         PacketPlayerPosition PacketPlayerQuickKeys PacketPlayerReputation PacketPlayerRest PacketPlayerResurrect
         PacketPlayerShapeshift PacketPlayerSkill PacketPlayerSpeech PacketPlayerSpellbook PacketPlayerSpellsActive
         PacketPlayerStatsDynamic PacketPlayerTopic

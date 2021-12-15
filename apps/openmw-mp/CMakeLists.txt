@@ -157,7 +157,7 @@ add_executable(tes3mp-server
         ${SERVER} ${SERVER_HEADER}
         ${PROCESSORS_ACTOR} ${PROCESSORS_PLAYER} ${PROCESSORS_OBJECT} ${PROCESSORS_WORLDSTATE} ${PROCESSORS}
         ${APPLE_BUNDLE_RESOURCES}
-        )
+         "Script/Functions/Model.hpp" "Script/Functions/Model.cpp")
 
 target_compile_options(tes3mp-server PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/permissive->)
 

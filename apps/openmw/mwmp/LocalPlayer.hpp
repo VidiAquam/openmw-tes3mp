@@ -80,6 +80,7 @@ namespace mwmp
         void setShapeshift();
         void setMarkLocation();
         void setSelectedSpell();
+        void setModel();
 
         void sendDeath(char newDeathState);
         void sendClass();

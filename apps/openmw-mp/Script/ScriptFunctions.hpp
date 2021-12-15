@@ -12,6 +12,7 @@
 #include <Script/Functions/Items.hpp>
 #include <Script/Functions/Mechanics.hpp>
 #include <Script/Functions/Miscellaneous.hpp>
+#include <Script/Functions/Model.hpp>
 #include <Script/Functions/Objects.hpp>
 #include <Script/Functions/Positions.hpp>
 #include <Script/Functions/Quests.hpp>
@@ -140,6 +141,7 @@ public:
             ITEMAPI,
             MECHANICSAPI,
             MISCELLANEOUSAPI,
+            MODELAPI,
             POSITIONAPI,
             QUESTAPI,
             RECORDSDYNAMICAPI,

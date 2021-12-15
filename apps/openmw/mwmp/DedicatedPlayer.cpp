@@ -2,6 +2,7 @@
 #include <components/openmw-mp/TimedLog.hpp>
 #include <apps/openmw/mwmechanics/steering.hpp>
 
+
 #include "../mwbase/environment.hpp"
 #include "../mwbase/soundmanager.hpp"
 
@@ -61,7 +62,6 @@ DedicatedPlayer::DedicatedPlayer(RakNet::RakNetGUID guid) : BasePlayer(guid)
     npc = *world->getPlayerPtr().get<ESM::NPC>()->mBase;
     npc.mId = "";
     previousRace = npc.mRace;
-
     hasReceivedInitialEquipment = false;
     hasFinishedInitialTeleportation = false;
 }
@@ -517,6 +517,13 @@ void DedicatedPlayer::setSpellsActive()
 
     // Proceed by adding spells active
     addSpellsActive();
+}
+
+void DedicatedPlayer::setModel()
+{
+    npc.mModel = model;
+    RecordHelper::overrideRecord(npc);
+    reloadPtr();  
 }
 
 void DedicatedPlayer::updateMarker()

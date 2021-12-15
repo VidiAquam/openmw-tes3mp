@@ -254,6 +254,7 @@ namespace mwmp
 
         std::string sound;
         Animation animation;
+        std::string model;
         char deathState;
 
         bool resetStats = false;

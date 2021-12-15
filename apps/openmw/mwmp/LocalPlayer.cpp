@@ -1401,6 +1401,18 @@ void LocalPlayer::setSelectedSpell()
         int(MWMechanics::getSpellSuccessChance(selectedSpellId, ptrPlayer)));
 }
 
+void LocalPlayer::setModel()
+{
+    MWBase::World* world = MWBase::Environment::get().getWorld();
+    ESM::NPC player = *world->getPlayerPtr().get<ESM::NPC>()->mBase;
+
+    player.mModel = model;
+
+    world->createRecord(player);
+    MWBase::Environment::get().getMechanicsManager()->playerLoaded();
+    MWBase::Environment::get().getWindowManager()->getInventoryWindow()->rebuildAvatar();
+}
+
 void LocalPlayer::sendDeath(char newDeathState)
 {
     if (MechanicsHelper::isEmptyTarget(killer))

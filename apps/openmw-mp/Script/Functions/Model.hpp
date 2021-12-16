@@ -5,6 +5,7 @@
 
 #define MODELAPI \
     {"SetModel",               ModelFunctions::SetModel},\
+    {"ResetModel",             ModelFunctions::ResetModel},\
     \
     {"SendModel",              ModelFunctions::SendModel}
 
@@ -23,6 +24,17 @@ public:
     * \return void
     */
     static void SetModel(unsigned short pid, const char* model) noexcept;
+
+    /**
+    * \brief Reset the model of a player to its original value.
+    *
+    * This changes the model recorded for that player in the server memory, but
+    * does not by itself send a packet.
+    *
+    * \param pid The player ID.
+    * \return void
+    */
+    static void ResetModel(unsigned short pid) noexcept;
 
 
     /**

@@ -17,6 +17,14 @@ void ModelFunctions::SetModel(unsigned short pid, const char* model) noexcept
     player->model = model;
 }
 
+void ModelFunctions::ResetModel(unsigned short pid) noexcept
+{
+    Player* player;
+    GET_PLAYER(pid, player, );
+
+    player->model = "";
+}
+
 void ModelFunctions::SendModel(unsigned short pid)
 {
     Player* player;

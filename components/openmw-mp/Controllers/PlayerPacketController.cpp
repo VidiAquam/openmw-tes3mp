@@ -2,6 +2,7 @@
 #include "../Packets/Player/PacketChatMessage.hpp"
 #include "../Packets/Player/PacketPlayerCharGen.hpp"
 #include "../Packets/Player/PacketGUIBoxes.hpp"
+#include "../Packets/Player/PacketGMST.hpp"
 #include "../Packets/Player/PacketLoaded.hpp"
 #include "../Packets/Player/PacketGameSettings.hpp"
 #include "../Packets/Player/PacketPlayerSpellsActive.hpp"
@@ -98,6 +99,7 @@ mwmp::PlayerPacketController::PlayerPacketController(RakNet::RakPeerInterface *p
     AddPacket<PacketPlayerSpellbook>(&packets, peer);
     AddPacket<PacketPlayerStatsDynamic>(&packets, peer);
     AddPacket<PacketPlayerTopic>(&packets, peer);
+    AddPacket<PacketGMST>(&packets, peer);
 }
 
 

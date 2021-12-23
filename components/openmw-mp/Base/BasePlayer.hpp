@@ -284,6 +284,8 @@ namespace mwmp
         mwmp::Item usedItem;
         bool usingItemMagic;
         char itemUseDrawState;
+
+        std::map<std::string, std::string> gmsts;
     };
 }
 

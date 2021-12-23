@@ -61,7 +61,7 @@ set(SERVER
     Script/Functions/GUI.cpp Script/Functions/Items.cpp Script/Functions/Mechanics.cpp
     Script/Functions/Positions.cpp Script/Functions/Quests.cpp Script/Functions/RecordsDynamic.cpp
     Script/Functions/Server.cpp Script/Functions/Settings.cpp Script/Functions/Shapeshift.cpp
-    Script/Functions/Spells.cpp Script/Functions/Stats.cpp Script/Functions/Timer.cpp
+    Script/Functions/Spells.cpp Script/Functions/Stats.cpp Script/Functions/Timer.cpp Script/Functions/GMST.cpp Script/Functions/Model.cpp
 
     Script/API/TimerAPI.cpp Script/API/PublicFnAPI.cpp
         ${LuaScript_Sources}
@@ -157,7 +157,7 @@ add_executable(tes3mp-server
         ${SERVER} ${SERVER_HEADER}
         ${PROCESSORS_ACTOR} ${PROCESSORS_PLAYER} ${PROCESSORS_OBJECT} ${PROCESSORS_WORLDSTATE} ${PROCESSORS}
         ${APPLE_BUNDLE_RESOURCES}
-         "Script/Functions/Model.hpp" "Script/Functions/Model.cpp")
+         "Script/Functions/Model.hpp")
 
 target_compile_options(tes3mp-server PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/permissive->)
 

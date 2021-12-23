@@ -5,6 +5,7 @@
 
 #include "PlayerProcessor.hpp"
 #include "player/ProcessorChatMessage.hpp"
+#include "player/ProcessorGMST.hpp"
 #include "player/ProcessorGUIMessageBox.hpp"
 #include "player/ProcessorUserDisconnected.hpp"
 #include "player/ProcessorGameSettings.hpp"
@@ -154,6 +155,7 @@ void ProcessorInitializer()
     PlayerProcessor::AddProcessor(new ProcessorPlayerSpellsActive());
     PlayerProcessor::AddProcessor(new ProcessorPlayerStatsDynamic());
     PlayerProcessor::AddProcessor(new ProcessorPlayerTopic());
+    PlayerProcessor::AddProcessor(new ProcessorGMST());
 
     ObjectProcessor::AddProcessor(new ProcessorConsoleCommand());
     ObjectProcessor::AddProcessor(new ProcessorContainer());

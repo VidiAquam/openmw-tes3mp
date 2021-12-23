@@ -8,6 +8,7 @@
 #include <Script/Functions/Chat.hpp>
 #include <Script/Functions/Dialogue.hpp>
 #include <Script/Functions/Factions.hpp>
+#include <Script/Functions/GMST.hpp>
 #include <Script/Functions/GUI.hpp>
 #include <Script/Functions/Items.hpp>
 #include <Script/Functions/Mechanics.hpp>
@@ -137,6 +138,7 @@ public:
             CHATAPI,
             DIALOGUEAPI,
             FACTIONAPI,
+            GMSTAPI,
             GUIAPI,
             ITEMAPI,
             MECHANICSAPI,

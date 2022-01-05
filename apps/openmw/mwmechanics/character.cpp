@@ -2128,37 +2128,7 @@ void CharacterController::update(float duration)
         osg::Vec3f rot = cls.getRotationVector(mPtr);
         osg::Vec3f vec(movementSettings.asVec3());
 
-        /*
-            Start of tes3mp addition
 
-            Character movement setting rotations get reset here, so we have to assign movement
-            settings to the LocalPlayer or a LocalActor now
-        */
-        if (world->getPlayerPtr() == mPtr)
-        {
-            mwmp::LocalPlayer *localPlayer = mwmp::Main::get().getLocalPlayer();
-            MWMechanics::Movement &movementSettings = cls.getMovementSettings(mPtr);
-            localPlayer->direction.pos[0] = movementSettings.mPosition[0];
-            localPlayer->direction.pos[1] = movementSettings.mPosition[1];
-            localPlayer->direction.pos[2] = movementSettings.mPosition[2];
-            localPlayer->direction.rot[0] = movementSettings.mRotation[0];
-            localPlayer->direction.rot[1] = movementSettings.mRotation[1];
-            localPlayer->direction.rot[2] = movementSettings.mRotation[2];
-        }
-        else if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
-        {
-            mwmp::LocalActor *localActor = mwmp::Main::get().getCellController()->getLocalActor(mPtr);
-            MWMechanics::Movement &movementSettings = cls.getMovementSettings(mPtr);
-            localActor->direction.pos[0] = movementSettings.mPosition[0];
-            localActor->direction.pos[1] = movementSettings.mPosition[1];
-            localActor->direction.pos[2] = movementSettings.mPosition[2];
-            localActor->direction.rot[0] = movementSettings.mRotation[0];
-            localActor->direction.rot[1] = movementSettings.mRotation[1];
-            localActor->direction.rot[2] = movementSettings.mRotation[2];
-        }
-        /*
-            End of tes3mp addition
-        */
 
         movementSettings.mSpeedFactor = std::min(vec.length(), 1.f);
         vec.normalize();
@@ -2252,6 +2222,38 @@ void CharacterController::update(float duration)
             mAnimation->setUpperBodyYawRadians(stats.getSideMovementAngle() / 4);
         if (smoothMovement && !isPlayer && !inwater)
             mAnimation->setUpperBodyYawRadians(mAnimation->getUpperBodyYawRadians() + mAnimation->getHeadYaw() / 2);
+
+        /*
+        Start of tes3mp addition
+
+        Character movement setting rotations get reset here, so we have to assign movement
+        settings to the LocalPlayer or a LocalActor now
+        */
+        if (world->getPlayerPtr() == mPtr)
+        {
+            mwmp::LocalPlayer* localPlayer = mwmp::Main::get().getLocalPlayer();
+            MWMechanics::Movement& movementSettings = cls.getMovementSettings(mPtr);
+            localPlayer->direction.pos[0] = movementSettings.mPosition[0];
+            localPlayer->direction.pos[1] = movementSettings.mPosition[1];
+            localPlayer->direction.pos[2] = movementSettings.mPosition[2];
+            localPlayer->direction.rot[0] = movementSettings.mRotation[0];
+            localPlayer->direction.rot[1] = movementSettings.mRotation[1];
+            localPlayer->direction.rot[2] = effectiveRotation;
+        }
+        else if (mwmp::Main::get().getCellController()->isLocalActor(mPtr))
+        {
+            mwmp::LocalActor* localActor = mwmp::Main::get().getCellController()->getLocalActor(mPtr);
+            MWMechanics::Movement& movementSettings = cls.getMovementSettings(mPtr);
+            localActor->direction.pos[0] = movementSettings.mPosition[0];
+            localActor->direction.pos[1] = movementSettings.mPosition[1];
+            localActor->direction.pos[2] = movementSettings.mPosition[2];
+            localActor->direction.rot[0] = movementSettings.mRotation[0];
+            localActor->direction.rot[1] = movementSettings.mRotation[1];
+            localActor->direction.rot[2] = effectiveRotation;
+        }
+        /*
+            End of tes3mp addition
+        */
 
         speed = cls.getCurrentSpeed(mPtr);
         vec.x() *= speed;

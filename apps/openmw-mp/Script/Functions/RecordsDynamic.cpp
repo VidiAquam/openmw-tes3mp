@@ -86,6 +86,7 @@ void RecordsDynamicFunctions::ClearRecords() noexcept
     WorldstateFunctions::writeWorldstate.scriptRecords.clear();
     WorldstateFunctions::writeWorldstate.staticRecords.clear();
     WorldstateFunctions::writeWorldstate.soundRecords.clear();
+    WorldstateFunctions::writeWorldstate.gameSettingRecords.clear();
 }
 
 unsigned short RecordsDynamicFunctions::GetRecordType() noexcept
